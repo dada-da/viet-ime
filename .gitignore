@@ -1,0 +1,38 @@
+# ---- Build artefacts ----
+*.o
+*.d
+*.a
+*.so
+*.dylib
+*.dll
+*.lib
+*.exe
+ime
+
+# ---- CMake (từ ngày 26) ----
+build/
+cmake-build-*/
+CMakeCache.txt
+CMakeFiles/
+CMakeUserPresets.json
+
+# ---- Editor / IDE ----
+.vscode/
+.idea/
+*.swp
+*~
+
+# ---- Rác hệ điều hành ----
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---- Xcode (Giai đoạn 3) ----
+DerivedData/
+xcuserdata/
+*.xcuserstate
+
+# ---- Log, core dump ----
+*.log
+core.*
+vgcore.*
