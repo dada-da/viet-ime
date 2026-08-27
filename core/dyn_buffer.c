@@ -1,6 +1,6 @@
 #include <stdlib.h>
 
-#include "dynbuf.h"
+#include "dyn_buffer.h"
 
 int dynbuf_init(DynBuffer *b, size_t cap)
 {

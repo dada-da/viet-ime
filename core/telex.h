@@ -3,27 +3,36 @@
 
 #include <stdint.h>
 
-typedef struct
+#ifdef __cplusplus
+extern "C"
 {
-  char base;
-  char mod;
-  const char *result;
-} TelexRule;
+#endif
 
-typedef struct
-{
-  char key;
-  const char *name;
-} ToneRule;
+  typedef struct
+  {
+    char base;
+    char mod;
+    const char *result;
+  } TelexRule;
 
-typedef struct
-{
-  uint32_t keycode;
-  int is_shift;
-} KeyEvent;
+  typedef struct
+  {
+    char key;
+    const char *name;
+  } ToneRule;
 
-const char *telex_lookup(char base, char mod);
-const char *tone_lookup(char key);
-void print_key_event(const KeyEvent *e);
+  typedef struct
+  {
+    uint32_t keycode;
+    int is_shift;
+  } KeyEvent;
+
+  const char *telex_lookup(char base, char mod);
+  const char *tone_lookup(char key);
+  void print_key_event(const KeyEvent *e);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

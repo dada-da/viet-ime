@@ -1,16 +1,16 @@
-#include <stdio.h>
+#include <iostream>
 
-#include "dynbuf.h"
+#include "dyn_buffer.h"
 
 int main(void)
 {
   DynBuffer b;
-  // dynbuf_init(&b, 4);
+  dynbuf_init(&b, 4);
   const char *keys = "tieengs";
   for (int i = 0; keys[i] != '\0'; i++)
   {
     dynbuf_append(&b, keys[i]);
-    printf("after '%c': \"%s\" len=%zu cap=%zu\n", keys[i], b.data, b.len, b.cap);
+    std::cout << "after " << keys[i] << ": " << b.data << " len=" << b.len << " cap=" << b.cap << std::endl;
   }
   dynbuf_free(&b);
 
