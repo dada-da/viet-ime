@@ -1,31 +1,42 @@
-#include "input_buffer.h"
 #include <iostream>
+
+#include "key_processor.h"
 
 int main(void)
 {
-  const int max_len = 16;
-
+  KeyProcessor kp;
   std::string line;
-  std::getline(std::cin, line);
 
-  std::string line_buffer;
+  std::cout << "Nhap (dung - lam backspace): ";
+  std::getline(std::cin, line);
 
   for (char c : line)
   {
-    buffer_append(line_buffer, c, max_len);
-    if (c == '-' || c == '\b')
+    if (c == '-')
     {
-      line_buffer.pop_back();
+      kp.backspace();
+    }
+    else if (!kp.process_key(c))
+    {
+      std::cout << "Buffer day, bo qua: " << c << "\n";
     }
   }
 
-  buffer_print(line_buffer);
+  std::cout << "end with s: " << kp.ends_with('s') << "\n";
 
-  char out[line_buffer.size()];
+  std::cout << "preedit = [" << kp.preedit() << "]"
+            << " len=" << kp.length() << "\n";
 
-  int c_buffer = copy_to_c_buffer(line_buffer, out, max_len);
-
-  std::cout << "C buffer: " << out << "(" << c_buffer << ")" << "\n";
+  char out[16];
+  int n = kp.copy_preedit(out, sizeof(out));
+  if (n < 0)
+  {
+    std::cout << "buffer C qua nho\n";
+  }
+  else
+  {
+    std::cout << "C buffer: " << out << " (" << n << " bytes)\n";
+  }
 
   return 0;
 }

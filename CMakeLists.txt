@@ -15,7 +15,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 add_executable(ime
   core/main.cpp
   core/telex.c
-  core/input_buffer.cpp
+  core/key_processor.cpp
   core/config.c)
 
 target_include_directories(ime PRIVATE core)
