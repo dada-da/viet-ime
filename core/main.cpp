@@ -1,18 +1,31 @@
+#include "input_buffer.h"
 #include <iostream>
-
-#include "dyn_buffer.h"
 
 int main(void)
 {
-  DynBuffer b;
-  dynbuf_init(&b, 4);
-  const char *keys = "tieengs";
-  for (int i = 0; keys[i] != '\0'; i++)
+  const int max_len = 16;
+
+  std::string line;
+  std::getline(std::cin, line);
+
+  std::string line_buffer;
+
+  for (char c : line)
   {
-    dynbuf_append(&b, keys[i]);
-    std::cout << "after " << keys[i] << ": " << b.data << " len=" << b.len << " cap=" << b.cap << std::endl;
+    buffer_append(line_buffer, c, max_len);
+    if (c == '-' || c == '\b')
+    {
+      line_buffer.pop_back();
+    }
   }
-  dynbuf_free(&b);
+
+  buffer_print(line_buffer);
+
+  char out[line_buffer.size()];
+
+  int c_buffer = copy_to_c_buffer(line_buffer, out, max_len);
+
+  std::cout << "C buffer: " << out << "(" << c_buffer << ")" << "\n";
 
   return 0;
 }
