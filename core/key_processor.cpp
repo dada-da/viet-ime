@@ -2,6 +2,11 @@
 
 #include <cstring>
 
+KeyProcessor::KeyProcessor(size_t max_len)
+    : max_len_(max_len)
+{
+}
+
 bool KeyProcessor::process_key(char c)
 {
   if (buffer_.size() >= max_len_)

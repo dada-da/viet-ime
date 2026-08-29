@@ -7,6 +7,9 @@
 class KeyProcessor
 {
 public:
+  KeyProcessor() = default;
+  explicit KeyProcessor(size_t max_len);
+
   bool process_key(char c);
   bool backspace();
   void reset();
