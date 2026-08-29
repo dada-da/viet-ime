@@ -77,3 +77,23 @@ bool KeyProcessor::ends_with(char c) const
 
   return c == end_char;
 }
+
+bool KeyProcessor::starts_with(const std::string &prefix) const
+{
+  if (prefix.size() > buffer_.size())
+  {
+    return false;
+  }
+
+  return buffer_.compare(0, prefix.size(), prefix) == 0;
+}
+
+void KeyProcessor::set_preedit(const std::string &text)
+{
+  if (text.size() > max_len_)
+  {
+    return;
+  }
+
+  buffer_ = text;
+}

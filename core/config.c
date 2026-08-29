@@ -37,7 +37,7 @@ int config_load(const char *path, Config *c)
 
   while (fgets(line, sizeof(line), f) != NULL)
   {
-    char extract_method[16];
+    char extract_method[17];
     int extract_enabled;
 
     if (sscanf(line, "method=%16s", extract_method) == 1)

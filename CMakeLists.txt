@@ -25,3 +25,8 @@ if(MSVC)
 else()
   target_compile_options(ime PRIVATE -Wall -Wextra)
 endif()
+
+if(CMAKE_BUILD_TYPE STREQUAL "Debug" AND NOT MSVC AND NOT WIN32)
+    target_compile_options(ime PRIVATE -fsanitize=address,undefined)
+    target_link_options(ime PRIVATE -fsanitize=address,undefined)
+endif()
