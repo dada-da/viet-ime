@@ -28,10 +28,18 @@ int main(void)
       continue;
     }
 
+    if (c == '-')
+    {
+      kp.backspace();
+      continue;
+    }
+
     kp.process_key(c);
   }
 
   std::cout << "[" << kp.preedit() << "]\n";
+  std::cout << "Length = " << kp.length() << "\n";
+  std::cout << "Char count = " << kp.char_count() << "\n";
 
   return 0;
 }

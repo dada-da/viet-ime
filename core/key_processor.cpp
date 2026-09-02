@@ -24,7 +24,7 @@ bool KeyProcessor::backspace()
     return false;
   }
 
-  buffer_.pop_back();
+  buffer_.erase(utf8_prev_boundary(buffer_, buffer_.size()));
   return true;
 }
 
@@ -138,3 +138,8 @@ Tone KeyProcessor::tone_by_input_method(char key, InputMethod input_method)
     return tone_from_telex(key);
   }
 };
+
+size_t KeyProcessor::char_count() const
+{
+  return utf8_char_count(buffer_);
+}

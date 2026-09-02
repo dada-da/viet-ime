@@ -5,6 +5,7 @@
 #include <string>
 
 #include "tone_table.h"
+#include "utf8.h"
 
 enum InputMethod
 {
@@ -32,6 +33,7 @@ public:
   int copy_preedit(char *out, size_t out_len) const;
   bool ends_with(char c) const;
   bool starts_with(const std::string &prefix) const;
+  size_t char_count() const;
 
 private:
   std::string buffer_;

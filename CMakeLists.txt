@@ -17,7 +17,8 @@ add_executable(ime
   core/tone_table.cpp
   core/telex.c
   core/key_processor.cpp
-  core/config.c)
+  core/config.c
+  core/utf8.cpp)
 
 target_include_directories(ime PRIVATE core)
 
