@@ -7,36 +7,31 @@ int main(void)
   KeyProcessor kp;
   std::string line;
 
-  std::cout << "Nhap (dung - lam backspace): ";
+  int input_method;
+
+  std::cout << "Chon kieu go 1 - TELEX, 2 - VNI (default: TELEX)\n";
+  std::cin >> input_method;
+  std::cin.ignore();
+
+  if (input_method == 2)
+  {
+
+    kp.set_method(METHOD_VNI);
+  }
+
   std::getline(std::cin, line);
 
   for (char c : line)
   {
-    if (c == '-')
+    if (kp.apply_tone(c))
     {
-      kp.backspace();
+      continue;
     }
-    else if (!kp.process_key(c))
-    {
-      std::cout << "Buffer day, bo qua: " << c << "\n";
-    }
+
+    kp.process_key(c);
   }
 
-  std::cout << "end with s: " << kp.ends_with('s') << "\n";
-
-  std::cout << "preedit = [" << kp.preedit() << "]"
-            << " len=" << kp.length() << "\n";
-
-  char out[16];
-  int n = kp.copy_preedit(out, sizeof(out));
-  if (n < 0)
-  {
-    std::cout << "buffer C qua nho\n";
-  }
-  else
-  {
-    std::cout << "C buffer: " << out << " (" << n << " bytes)\n";
-  }
+  std::cout << "[" << kp.preedit() << "]\n";
 
   return 0;
 }

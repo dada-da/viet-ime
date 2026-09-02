@@ -14,6 +14,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 add_executable(ime
   core/main.cpp
+  core/tone_table.cpp
   core/telex.c
   core/key_processor.cpp
   core/config.c)
@@ -21,7 +22,7 @@ add_executable(ime
 target_include_directories(ime PRIVATE core)
 
 if(MSVC)
-  target_compile_options(ime PRIVATE /W4)
+  target_compile_options(ime PRIVATE /W4 /utf-8)
 else()
   target_compile_options(ime PRIVATE -Wall -Wextra)
 endif()

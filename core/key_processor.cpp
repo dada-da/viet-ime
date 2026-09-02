@@ -2,8 +2,7 @@
 
 #include <cstring>
 
-KeyProcessor::KeyProcessor(size_t max_len)
-    : max_len_(max_len)
+KeyProcessor::KeyProcessor(size_t max_len) : max_len_(max_len)
 {
 }
 
@@ -97,3 +96,45 @@ void KeyProcessor::set_preedit(const std::string &text)
 
   buffer_ = text;
 }
+
+bool KeyProcessor::apply_tone(char key)
+{
+  Tone tone = tone_by_input_method(key, method_);
+
+  if (tone == TONE_NONE || buffer_.size() == 0)
+  {
+    return false;
+  }
+
+  for (size_t i = buffer_.size(); i > 0; --i)
+  {
+    char c = buffer_[i - 1];
+    std::string toned = apply_tone_to_vowel(c, tone);
+
+    if (!toned.empty())
+    {
+      buffer_.replace(i - 1, 1, toned);
+
+      return true;
+    }
+  }
+
+  return false;
+}
+
+void KeyProcessor::set_method(InputMethod m)
+{
+  method_ = m;
+}
+
+Tone KeyProcessor::tone_by_input_method(char key, InputMethod input_method)
+{
+  switch (input_method)
+  {
+  case METHOD_VNI:
+    return tone_from_vni(key);
+
+  default:
+    return tone_from_telex(key);
+  }
+};
