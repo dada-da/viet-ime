@@ -18,7 +18,8 @@ add_executable(ime
   core/telex.c
   core/key_processor.cpp
   core/config.c
-  core/utf8.cpp)
+  core/utf8.cpp
+  core/normalize.cpp)
 
 target_include_directories(ime PRIVATE core)
 
@@ -29,6 +30,6 @@ else()
 endif()
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug" AND NOT MSVC AND NOT WIN32)
-    target_compile_options(ime PRIVATE -fsanitize=address,undefined)
-    target_link_options(ime PRIVATE -fsanitize=address,undefined)
+  target_compile_options(ime PRIVATE -fsanitize=address,undefined)
+  target_link_options(ime PRIVATE -fsanitize=address,undefined)
 endif()
