@@ -89,10 +89,12 @@ namespace
 
   char32_t apply_tone(char32_t letter, char32_t mark)
   {
-    auto row = row_index().find(letter);
+    const auto &rows = row_index();
+
+    auto row = rows.find(letter);
     auto tone_col = kToneCol.find(mark);
 
-    if (row != row_index().end() && tone_col != kToneCol.end())
+    if (row != rows.end() && tone_col != kToneCol.end())
     {
       return row->second[tone_col->second];
     }
@@ -112,7 +114,6 @@ std::string to_nfc(const std::string &s)
   while (i < in.size())
   {
     char32_t base = in[i++];
-
     char32_t diacritic = 0;
     char32_t tone = 0;
 
@@ -122,7 +123,11 @@ std::string to_nfc(const std::string &s)
       {
         diacritic = in[i];
       }
-      else if (is_tone_mark(in[i]))
+      else if (tone != 0)
+      {
+        tone = 0;
+      }
+      else if (!is_tone_mark(in[i - 1]))
       {
         tone = in[i];
       }
@@ -153,14 +158,14 @@ std::string to_nfc(const std::string &s)
 
     out.push_back(base);
 
-    if (tone != 0)
-    {
-      out.push_back(tone);
-    }
-
     if (diacritic != 0)
     {
       out.push_back(diacritic);
+    }
+
+    if (tone != 0)
+    {
+      out.push_back(tone);
     }
   }
 
