@@ -4,8 +4,8 @@
 void test_utf8()
 {
   // utf8_char_len
-  check(utf8_char_len(0x41) == 1, "char_len: ASCII");         // A
-  check(utf8_char_len(0xC3) == 2, "char_len: 2 bytes");       // Ã
+  check(utf8_char_len(0x41) == 1, "char_len: ASCII"); // A
+  check(utf8_char_len(0xC3) == 2, "char_len: 2 bytes");
   check(utf8_char_len(0xE1) == 3, "char_len: 3 byte");        // á
   check(utf8_char_len(0xF0) == 4, "char_len: 4 byte");        // ð
   check(utf8_char_len(0x80) == 0, "char_len: byte tiep noi"); // €
@@ -25,7 +25,7 @@ void test_utf8()
   // utf_char_count
   check(utf8_char_count("") == 0, "char_count: rong");
   check(utf8_char_count(s) == 5, "char_count: tiếng 5 char chu khong phai 7");
-  check(utf8_char_count("ð") == 1, "char_count: 1 (4 bytes)");
+  check(utf8_char_count("\U0001F600") == 1, "char_count: 1 (4 bytes)");
   check(utf8_char_count("Chuỗi tiếng việt") == 16, "char_count: 1 cau tieng viet 14 chu 2 dau space");
 
   // utf_is_valid
@@ -50,7 +50,8 @@ void test_utf8()
   check_str(utf32_to_utf8(utf8_to_utf32("\U0001F600")), "\U0001F600", "round-trip: \U0001F600");
 
   // utf8_to_utf32
-  check(utf8_to_utf32("\u1ec1")[0] == 0x1EC1, "utf8_to_utf32: ê");
-  check(utf8_to_utf32("😀")[0] == 0x1F600, "utf8_to_utf32: 😀 emoji");
-  check(utf8_to_utf32("�")[0] == 0xFFFD, "utf8_to_utf32: � byte hong");
+  check(utf8_to_utf32("\u1ec1")[0] == 0x1EC1, "decode: ề");
+  check(utf8_to_utf32("😀")[0] == 0x1F600, "decode: 😀 emoji");
+  check(utf8_to_utf32("\x80")[0] == 0xFFFD, "decode: byte tiep noi mo coi -> U+FFFD");
+  check(utf8_to_utf32("\xE1\xBA").size() == 2, "decode: chuoi cut khong nuot byte");
 }

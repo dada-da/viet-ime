@@ -103,69 +103,90 @@ namespace
       return 0;
     }
   }
-}
 
-std::string to_nfc(const std::string &s)
-{
-  const std::u32string in = utf8_to_utf32(s);
-  std::u32string out;
-
-  size_t i = 0;
-  while (i < in.size())
+  char32_t compose(char32_t base, char32_t diacritic, char32_t tone)
   {
-    char32_t base = in[i++];
-    char32_t diacritic = 0;
-    char32_t tone = 0;
-
-    while (i < in.size() && (is_diacritic_mark(in[i]) || is_tone_mark(in[i])))
-    {
-      if (is_diacritic_mark(in[i]))
-      {
-        diacritic = in[i];
-      }
-      else if (tone != 0)
-      {
-        tone = 0;
-      }
-      else if (!is_tone_mark(in[i - 1]))
-      {
-        tone = in[i];
-      }
-
-      ++i;
-    }
-
     if (diacritic != 0)
     {
-      auto get_diacritic = kDiacritic.find({base, diacritic});
-      if (get_diacritic != kDiacritic.end())
-      {
-        base = get_diacritic->second;
-        diacritic = 0;
-      }
+      auto result = kDiacritic.find({base, diacritic});
+
+      if (result == kDiacritic.end())
+        return 0;
+
+      base = result->second;
     }
 
     if (tone != 0)
     {
       char32_t base_with_tone = apply_tone(base, tone);
 
-      if (base_with_tone != 0)
+      if (base_with_tone == 0)
+        return 0;
+
+      base = base_with_tone;
+    }
+
+    return base;
+  }
+}
+
+std::string to_nfc(const std::string &s)
+{
+  const std::u32string in = utf8_to_utf32(s);
+  std::u32string out;
+  std::u32string marks;
+
+  size_t i = 0;
+  while (i < in.size())
+  {
+    char32_t base = in[i++];
+
+    marks.clear();
+    while (i < in.size() && (is_diacritic_mark(in[i]) || is_tone_mark(in[i])))
+    {
+      marks.push_back(in[i]);
+      ++i;
+    }
+
+    char32_t diacritic = 0;
+    char32_t tone = 0;
+    bool duplicate = false;
+
+    for (char32_t mark : marks)
+    {
+      if (is_diacritic_mark(mark))
       {
-        base = base_with_tone;
-        tone = 0;
+        if (diacritic != 0)
+        {
+
+          duplicate = true;
+          break;
+        }
+        diacritic = mark;
+      }
+
+      if (is_tone_mark(mark))
+      {
+        if (tone != 0)
+        {
+
+          duplicate = true;
+          break;
+        }
+        tone = mark;
       }
     }
 
-    out.push_back(base);
+    char32_t composed = duplicate ? 0 : compose(base, diacritic, tone);
 
-    if (diacritic != 0)
+    if (composed != 0)
     {
-      out.push_back(diacritic);
+      out.push_back(composed);
     }
-
-    if (tone != 0)
+    else
     {
-      out.push_back(tone);
+      out.push_back(base);
+      out += marks;
     }
   }
 

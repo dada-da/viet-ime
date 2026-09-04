@@ -1,5 +1,6 @@
 #include "check.h"
 #include "normalize.h"
+#include "utf8.h"
 
 struct Case
 {
@@ -24,9 +25,9 @@ const std::string sample =
 
 void test_normalize()
 {
-  for (Case kCase : kCases)
+  for (const Case &test_case : kCases)
   {
-    check_str(to_nfc(kCase.in), kCase.want, kCase.name);
+    check_str(to_nfc(test_case.in), test_case.want, test_case.name);
   }
 
   check_str(to_nfc("e\xCC\x81\xCC\x80"), "e\xCC\x81\xCC\x80",
@@ -38,4 +39,56 @@ void test_normalize()
   check_str(to_nfc("b\xCC\x82\xCC\x81"), "b\xCC\x82\xCC\x81",
             "to_nfc: chu ngoai tieng Viet -> giu nguyen thu tu");
   check_str(to_nfc(to_nfc(sample)), to_nfc(sample), "to_nfc: idempotent");
+
+  check_str(to_nfc("e\xCC\x81"), "\u00e9", "to_nfc: e + sac");
+  check_str(to_nfc("e\xCC\x80"), "\u00e8", "to_nfc: e + huyen");
+  check_str(to_nfc("e\xCC\xA3"), "\u1eb9", "to_nfc: e + nang");
+  check_str(to_nfc("a\xCC\x86"), "\u0103", "to_nfc: a + trang (chi dau phu)");
+  check_str(to_nfc("o\xCC\x9B"), "\u01a1", "to_nfc: o + sung (chi dau phu)");
+  check_str(to_nfc("E\xCC\x82"), "\u00ca", "to_nfc: chu hoa E + mu");
+
+  check_str(to_nfc(""), "", "to_nfc: chuoi rong");
+  check_str(to_nfc("\xCC\x81"), "\xCC\x81",
+            "to_nfc: chi mot dau, khong co chu goc");
+  check_str(to_nfc("\xCC\x81"
+                   "a"),
+            "\xCC\x81"
+            "a",
+            "to_nfc: dau mo coi dau chuoi");
+  check_str(to_nfc("a\xCC\x81\xCC\x81"), "a\xCC\x81\xCC\x81",
+            "to_nfc: hai dau thanh giong het nhau");
+
+  const char *const kInputs[] = {
+      "",
+      "hello",
+      "e\xCC\x82\xCC\x80",
+      "e\xCC\x81\xCC\x80",
+      "b\xCC\x82\xCC\x81",
+      "\xCC\x81",
+      "\x80",
+      "\xE1\xBA",
+      "Ti\u1ebfng Vi\u1ec7t",
+  };
+
+  bool valid_out = true;
+  bool idempotent = true;
+  bool no_growth = true;
+
+  for (const char *in : kInputs)
+  {
+    const std::string once = to_nfc(in);
+
+    if (!utf8_is_valid(once))
+      valid_out = false;
+
+    if (to_nfc(once) != once)
+      idempotent = false;
+
+    if (utf8_is_valid(in) && utf8_char_count(once) > utf8_char_count(in))
+      no_growth = false;
+  }
+
+  check(valid_out, "bat bien: to_nfc luon tra ve UTF-8 hop le");
+  check(idempotent, "bat bien: to_nfc idempotent tren moi dau vao");
+  check(no_growth, "bat bien: dau vao hop le -> so ky tu khong tang");
 }
