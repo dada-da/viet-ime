@@ -17,7 +17,8 @@ add_library(ime_core STATIC
   core/key_processor.cpp
   core/config.c
   core/utf8.cpp
-  core/normalize.cpp)
+  core/normalize.cpp
+  core/syllable.cpp)
 
 target_include_directories(ime_core PUBLIC core)
 
@@ -35,6 +36,10 @@ add_executable(ime_tests
 
 target_link_libraries(ime_tests PRIVATE ime_core)
 add_test(NAME core COMMAND ime_tests)
+
+add_executable(test_syllable tests/test_syllable.cpp)
+target_link_libraries(test_syllable PRIVATE ime_core)
+add_test(NAME syllable COMMAND test_syllable)
 
 foreach(t ime_core ime ime_tests)
   if(MSVC)
