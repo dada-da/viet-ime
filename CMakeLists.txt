@@ -30,14 +30,14 @@ add_executable(ime_tests
   tests/check.cpp
   tests/test_main.cpp
   tests/test_utf8.cpp
-  # tests/test_normalize.cpp
-  )
+  tests/test_normalize.cpp
+)
 
 target_link_libraries(ime_tests PRIVATE ime_core)
 add_test(NAME core COMMAND ime_tests)
 
 foreach(t ime_core ime ime_tests)
-  if (MSVC)
+  if(MSVC)
     target_compile_options(${t} PRIVATE /W4 /utf-8)
   else()
     target_compile_options(${t} PRIVATE -Wall -Wextra)

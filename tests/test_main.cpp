@@ -2,12 +2,12 @@
 #include <iostream>
 
 void test_utf8();
-// void test_normalize();
+void test_normalize();
 
 int main(void)
 {
   test_utf8();
-  // test_normalize();
+  test_normalize();
 
   std::cout << "\n"
             << (g_failures == 0 ? "TAT CA PASS" : "CO LOI")
