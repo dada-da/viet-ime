@@ -16,6 +16,6 @@ enum Tone
 Tone tone_from_telex(char key);
 Tone tone_from_vni(char key);
 
-std::string apply_tone_to_vowel(char vowel, Tone tone);
+char32_t apply_tone_to_vowel(char32_t vowel, Tone tone);
 
 #endif /* TONE_TABLE_H */

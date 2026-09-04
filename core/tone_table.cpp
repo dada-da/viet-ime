@@ -1,18 +1,24 @@
 #include "tone_table.h"
 
 #include <map>
-#include <vector>
+#include <array>
 
 namespace
 {
 
-  const std::map<char, std::vector<std::string>> kToneTable = {
-      {'a', {"á", "à", "ả", "ã", "ạ"}},
-      {'e', {"é", "è", "ẻ", "ẽ", "ẹ"}},
-      {'i', {"í", "ì", "ỉ", "ĩ", "ị"}},
-      {'o', {"ó", "ò", "ỏ", "õ", "ọ"}},
-      {'u', {"ú", "ù", "ủ", "ũ", "ụ"}},
-      {'y', {"ý", "ỳ", "ỷ", "ỹ", "ỵ"}},
+  const std::map<char32_t, std::array<char32_t, 5>> kToneTable = {
+      {U'a', {U'á', U'à', U'ả', U'ã', U'ạ'}},
+      {U'ă', {U'ắ', U'ằ', U'ẳ', U'ẵ', U'ặ'}},
+      {U'â', {U'ấ', U'ầ', U'ẩ', U'ẫ', U'ậ'}},
+      {U'e', {U'é', U'è', U'ẻ', U'ẽ', U'ẹ'}},
+      {U'ê', {U'ế', U'ề', U'ể', U'ễ', U'ệ'}},
+      {U'i', {U'í', U'ì', U'ỉ', U'ĩ', U'ị'}},
+      {U'o', {U'ó', U'ò', U'ỏ', U'õ', U'ọ'}},
+      {U'ô', {U'ố', U'ồ', U'ổ', U'ỗ', U'ộ'}},
+      {U'ơ', {U'ớ', U'ờ', U'ở', U'ỡ', U'ợ'}},
+      {U'u', {U'ú', U'ù', U'ủ', U'ũ', U'ụ'}},
+      {U'ư', {U'ứ', U'ừ', U'ử', U'ữ', U'ự'}},
+      {U'y', {U'ý', U'ỳ', U'ỷ', U'ỹ', U'ỵ'}},
   };
 }
 
@@ -56,18 +62,18 @@ Tone tone_from_vni(char key)
   }
 }
 
-std::string apply_tone_to_vowel(char vowel, Tone tone)
+char32_t apply_tone_to_vowel(char32_t vowel, Tone tone)
 {
   if (tone == TONE_NONE)
   {
-    return std::string();
+    return char32_t();
   }
 
   auto it = kToneTable.find(vowel);
 
   if (it == kToneTable.end())
   {
-    return std::string();
+    return char32_t();
   }
 
   return it->second[static_cast<size_t>(tone)];
