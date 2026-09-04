@@ -66,14 +66,14 @@ char32_t apply_tone_to_vowel(char32_t vowel, Tone tone)
 {
   if (tone == TONE_NONE)
   {
-    return char32_t();
+    return vowel;
   }
 
   auto it = kToneTable.find(vowel);
 
   if (it == kToneTable.end())
   {
-    return char32_t();
+    return vowel;
   }
 
   return it->second[static_cast<size_t>(tone)];

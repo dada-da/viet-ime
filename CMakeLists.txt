@@ -13,7 +13,6 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 add_library(ime_core STATIC
   core/tone_table.cpp
-  core/telex.c
   core/key_processor.cpp
   core/config.c
   core/utf8.cpp
@@ -32,6 +31,7 @@ add_executable(ime_tests
   tests/test_main.cpp
   tests/test_utf8.cpp
   tests/test_normalize.cpp
+  tests/test_tone_table.cpp
 )
 
 target_link_libraries(ime_tests PRIVATE ime_core)

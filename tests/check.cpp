@@ -31,3 +31,15 @@ void check_str(const std::string &got, const std::string &want, const std::strin
     print_hex("got:", got);
   }
 }
+
+void check_char32(char32_t got, char32_t want, const std::string &name)
+{
+  check(got == want, name);
+  if (got != want)
+  {
+    std::printf("    want: U+%04X | %s\n", static_cast<unsigned>(want),
+                utf32_to_utf8(std::u32string(1, want)).c_str());
+    std::printf("    got:  U+%04X | %s\n", static_cast<unsigned>(got),
+                utf32_to_utf8(std::u32string(1, got)).c_str());
+  }
+}
