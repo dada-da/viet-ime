@@ -1,108 +1,110 @@
+#include "check.h"
 #include "syllable.h"
-#include "normalize.h"
 #include "utf8.h"
 
 #include <cstddef>
-#include <iostream>
 #include <string>
 
 using namespace vietime;
 
-static int g_failed = 0;
-static int g_total = 0;
-
-// So sánh vị trí đặt dấu. Đổi tên/thân hàm cho khớp harness của bạn.
-static void check_pos(const std::u32string &input,
-                      std::size_t expected,
-                      const char *rule)
+namespace
 {
-  ++g_total;
-  const std::size_t actual = find_tone_position(input);
-  if (actual == expected)
-    return;
 
-  ++g_failed;
-  std::cout << "  FAIL [" << rule << "] \"" << utf32_to_utf8(input) << "\"\n"
-            << "        expected = " << static_cast<long long>(expected)
-            << ", actual = " << static_cast<long long>(actual) << "\n";
-}
+  std::string pos_str(std::size_t p)
+  {
+    return std::to_string(static_cast<long long>(p));
+  }
 
-static void check_parts(const std::u32string &input,
-                        const std::u32string &initial,
-                        const std::u32string &nucleus,
-                        const std::u32string &coda)
+  void check_pos(const std::u32string &input, std::size_t want, const std::string &rule)
+  {
+    const std::size_t got = find_tone_position(input);
+    const std::string name = "[" + rule + "] " + utf32_to_utf8(input);
+
+    check(got == want, name);
+    if (got != want)
+    {
+      std::cout << "    want: " << pos_str(want) << "\n"
+                << "    got:  " << pos_str(got) << "\n";
+    }
+  }
+
+  void check_parts(const std::u32string &input,
+                   const std::u32string &initial,
+                   const std::u32string &nucleus,
+                   const std::u32string &coda)
+  {
+    const SyllableParts p = split_syllable(input);
+    const std::string name = "split \"" + utf32_to_utf8(input) + "\"";
+
+    const bool ok = (p.initial == initial && p.nucleus == nucleus && p.coda == coda);
+    check(ok, name);
+    if (!ok)
+    {
+      std::cout << "    want: " << utf32_to_utf8(initial)
+                << " | " << utf32_to_utf8(nucleus)
+                << " | " << utf32_to_utf8(coda) << "\n"
+                << "    got:  " << utf32_to_utf8(p.initial)
+                << " | " << utf32_to_utf8(p.nucleus)
+                << " | " << utf32_to_utf8(p.coda) << "\n";
+    }
+
+    // nucleus_start phai tro dung vao vi tri nucleus trong chuoi goc
+    check(input.compare(p.nucleus_start, p.nucleus.size(), p.nucleus) == 0,
+          name + " (nucleus_start)");
+  }
+
+} // namespace
+
+void run_syllable_tests()
 {
-  ++g_total;
-  const SyllableParts p = split_syllable(input);
-  if (p.initial == initial && p.nucleus == nucleus && p.coda == coda)
-    return;
-
-  ++g_failed;
-  std::cout << "  FAIL split \"" << utf32_to_utf8(input) << "\"\n"
-            << "        expected = "
-            << utf32_to_utf8(initial) << " | "
-            << utf32_to_utf8(nucleus) << " | "
-            << utf32_to_utf8(coda) << "\n"
-            << "        actual   = "
-            << utf32_to_utf8(p.initial) << " | "
-            << utf32_to_utf8(p.nucleus) << " | "
-            << utf32_to_utf8(p.coda) << "\n";
-}
-
-int main()
-{
-  std::cout << "== split_syllable ==\n";
+  // --- split_syllable ---
   check_parts(U"tiêu", U"t", U"iêu", U"");
   check_parts(U"quan", U"qu", U"a", U"n");
   check_parts(U"giương", U"gi", U"ươ", U"ng");
-  check_parts(U"nghiêng", U"ngh", U"iê", U"ng"); // 'h' sát nguyên âm, không phải 'g'
-  check_parts(U"gi", U"g", U"i", U"");           // không cắt: âm chính sẽ rỗng
-  check_parts(U"ăn", U"", U"ă", U"n");           // không có âm đầu → chốt i > 0
+  check_parts(U"nghiêng", U"ngh", U"iê", U"ng"); // 'h' sat nguyen am, khong phai 'g'
+  check_parts(U"gi", U"g", U"i", U"");           // khong cat: am chinh se rong
+  check_parts(U"ăn", U"", U"ă", U"n");           // khong co am dau -> chot i > 0
   check_parts(U"ng", U"ng", U"", U"");
   check_parts(U"", U"", U"", U"");
 
-  std::cout << "== luật 1: ơ ==\n";
+  // --- luat 1: o-horn ---
   check_pos(U"ngươi", 3, "R1");
   check_pos(U"đươc", 2, "R1");
-  check_pos(U"giương", 3, "R1"); // ngoại lệ gi + luật ơ cùng lúc
+  check_pos(U"giương", 3, "R1"); // ngoai le gi + luat o-horn cung luc
 
-  std::cout << "== luật 2: ê ==\n";
+  // --- luat 2: e-circ ---
   check_pos(U"tiêng", 2, "R2");
   check_pos(U"tiêu", 2, "R2");
   check_pos(U"nghiêng", 4, "R2");
-  check_pos(U"quyên", 3, "R2"); // qu cắt trước, âm chính "yê"
+  check_pos(U"quyên", 3, "R2"); // qu cat truoc, am chinh "ye-circ"
 
-  std::cout << "== luật 3: ă â ô ư ==\n";
+  // --- luat 3: a-breve a-circ o-circ u-horn ---
   check_pos(U"cưa", 1, "R3");
   check_pos(U"tuôi", 2, "R3");
   check_pos(U"uông", 1, "R3");
-  check_pos(U"ăn", 0, "R3"); // vị trí 0 hợp lệ, đừng nhầm với NO_TONE_POS
+  check_pos(U"ăn", 0, "R3"); // vi tri 0 hop le, dung nham voi NO_TONE_POS
 
-  std::cout << "== luật 4: một nguyên âm ==\n";
+  // --- luat 4: mot nguyen am ---
   check_pos(U"ta", 1, "R4");
   check_pos(U"qua", 2, "R4");
   check_pos(U"gia", 2, "R4");
   check_pos(U"quy", 2, "R4");
   check_pos(U"gi", 1, "R4");
 
-  std::cout << "== luật 5: có âm cuối → nguyên âm cuối ==\n";
+  // --- luat 5: co am cuoi -> nguyen am cuoi ---
   check_pos(U"toan", 2, "R5");
   check_pos(U"hoan", 2, "R5");
   check_pos(U"oanh", 1, "R5");
 
-  std::cout << "== luật 6: 3 nguyên âm, không âm cuối → giữa ==\n";
+  // --- luat 6: 3 nguyen am, khong am cuoi -> giua ---
   check_pos(U"ngoai", 3, "R6");
 
-  std::cout << "== luật 7: còn lại → nguyên âm đầu ==\n";
+  // --- luat 7: con lai -> nguyen am dau ---
   check_pos(U"cua", 1, "R7");
   check_pos(U"hoa", 1, "R7");
   check_pos(U"chia", 2, "R7");
 
-  std::cout << "== không có nguyên âm ==\n";
+  // --- khong co nguyen am ---
   check_pos(U"ng", NO_TONE_POS, "none");
   check_pos(U"", NO_TONE_POS, "none");
-
-  std::cout << "\n"
-            << (g_total - g_failed) << "/" << g_total << " passed\n";
-  return g_failed == 0 ? 0 : 1;
 }

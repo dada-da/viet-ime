@@ -2,50 +2,94 @@
 
 #include <cstring>
 
+#include "syllable.h"
+#include "telex_engine.h"
+#include "utf8.h"
+
 KeyProcessor::KeyProcessor(size_t max_len) : max_len_(max_len)
 {
 }
 
-bool KeyProcessor::process_key(char c)
+bool KeyProcessor::handle_key(char c)
 {
-  if (buffer_.size() >= max_len_)
+  const Tone t = tone_by_input_method(c);
+  if (t != TONE_NONE)
+  {
+    tone_ = (tone_ == t) ? TONE_NONE : t;
+    return true;
+  }
+
+  if (vietime::apply_modifier(base_, c))
+  {
+    return true;
+  }
+
+  if (base_.size() >= max_len_)
   {
     return false;
   }
 
-  buffer_ += c;
+  base_.push_back(static_cast<char32_t>(static_cast<unsigned char>(c)));
   return true;
+}
+
+std::u32string KeyProcessor::render() const
+{
+  std::u32string out = base_;
+
+  if (tone_ != TONE_NONE)
+  {
+    const size_t pos = vietime::find_tone_position(out);
+    if (pos != vietime::NO_TONE_POS)
+    {
+      out[pos] = apply_tone_to_vowel(out[pos], tone_);
+    }
+  }
+
+  return out;
+}
+
+std::string KeyProcessor::preedit() const
+{
+  return utf32_to_utf8(render());
 }
 
 bool KeyProcessor::backspace()
 {
-  if (buffer_.empty())
+  if (base_.empty())
   {
-    return false;
+    if (tone_ == TONE_NONE)
+      return false;
+
+    tone_ = TONE_NONE;
+    return true;
   }
 
-  buffer_.erase(utf8_prev_boundary(buffer_, buffer_.size()));
+  base_.pop_back();
+  if (base_.empty())
+    tone_ = TONE_NONE;
   return true;
 }
 
 void KeyProcessor::reset()
 {
-  buffer_.clear();
+  base_.clear();
+  tone_ = TONE_NONE;
 }
 
-const std::string &KeyProcessor::preedit() const
+void KeyProcessor::set_method(InputMethod m)
 {
-  return buffer_;
-}
-
-size_t KeyProcessor::length() const
-{
-  return buffer_.size();
+  method_ = m;
 }
 
 bool KeyProcessor::empty() const
 {
-  return buffer_.empty();
+  return base_.empty();
+}
+
+size_t KeyProcessor::char_count() const
+{
+  return base_.size();
 }
 
 int KeyProcessor::copy_preedit(char *out, size_t out_len) const
@@ -55,81 +99,38 @@ int KeyProcessor::copy_preedit(char *out, size_t out_len) const
     return -1;
   }
 
-  if (buffer_.size() + 1 > out_len)
+  const std::string s = utf32_to_utf8(render());
+
+  if (s.size() + 1 > out_len)
   {
     return -1;
   }
 
-  std::memcpy(out, buffer_.c_str(), buffer_.size() + 1);
+  std::memcpy(out, s.c_str(), s.size() + 1);
 
-  return static_cast<int>(buffer_.size());
+  return static_cast<int>(s.size());
 }
 
-bool KeyProcessor::ends_with(char c) const
+bool KeyProcessor::ends_with(char32_t c) const
 {
-  if (buffer_.empty())
-  {
-    return false;
-  }
-
-  char end_char = buffer_.back();
-
-  return c == end_char;
+  return !base_.empty() && base_.back() == c;
 }
 
 bool KeyProcessor::starts_with(const std::string &prefix) const
 {
-  if (prefix.size() > buffer_.size())
+  const std::string s = utf32_to_utf8(base_);
+
+  if (prefix.size() > s.size())
   {
     return false;
   }
 
-  return buffer_.compare(0, prefix.size(), prefix) == 0;
+  return s.compare(0, prefix.size(), prefix) == 0;
 }
 
-void KeyProcessor::set_preedit(const std::string &text)
+Tone KeyProcessor::tone_by_input_method(char key) const
 {
-  if (text.size() > max_len_)
-  {
-    return;
-  }
-
-  buffer_ = text;
-}
-
-bool KeyProcessor::apply_tone(char key)
-{
-  Tone tone = tone_by_input_method(key, method_);
-
-  if (tone == TONE_NONE || buffer_.size() == 0)
-  {
-    return false;
-  }
-
-  for (size_t i = buffer_.size(); i > 0; --i)
-  {
-    char c = buffer_[i - 1];
-    std::string toned = apply_tone_to_vowel(c, tone);
-
-    if (!toned.empty())
-    {
-      buffer_.replace(i - 1, 1, toned);
-
-      return true;
-    }
-  }
-
-  return false;
-}
-
-void KeyProcessor::set_method(InputMethod m)
-{
-  method_ = m;
-}
-
-Tone KeyProcessor::tone_by_input_method(char key, InputMethod input_method)
-{
-  switch (input_method)
+  switch (method_)
   {
   case METHOD_VNI:
     return tone_from_vni(key);
@@ -137,9 +138,4 @@ Tone KeyProcessor::tone_by_input_method(char key, InputMethod input_method)
   default:
     return tone_from_telex(key);
   }
-};
-
-size_t KeyProcessor::char_count() const
-{
-  return utf8_char_count(buffer_);
 }

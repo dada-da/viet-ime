@@ -31,22 +31,23 @@ int main(void)
 
   for (char c : line)
   {
-    if (kp.apply_tone(c))
-    {
-      continue;
-    }
-
     if (c == '-')
     {
       kp.backspace();
       continue;
     }
 
-    kp.process_key(c);
+    if (kp.handle_key(c))
+    {
+      continue;
+    }
+    else
+    {
+      break;
+    }
   }
 
   std::cout << "[" << kp.preedit() << "]\n";
-  std::cout << "Length = " << kp.length() << "\n";
   std::cout << "Char count = " << kp.char_count() << "\n";
 
   return 0;

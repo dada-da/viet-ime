@@ -1,8 +1,6 @@
 #ifndef TONE_TABLE_H
 #define TONE_TABLE_H
 
-#include <string>
-
 enum Tone
 {
   TONE_NONE = -1,
