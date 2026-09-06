@@ -20,7 +20,7 @@ namespace vietime
       return true;
     }
 
-    if (apply_modifier(base_, c))
+    if (apply_modifier(base_, c, method_))
     {
       return true;
     }

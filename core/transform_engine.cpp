@@ -20,9 +20,9 @@ namespace vietime
       }
     }
 
-    char32_t double_result(char32_t c, char key)
+    char32_t double_result(char32_t c, char key, InputMethod method)
     {
-      if (static_cast<char32_t>(key) != c)
+      if ((method == METHOD_VNI && key != '6') || (static_cast<char32_t>(key) != c && method == METHOD_TELEX))
       {
         return 0;
       }
@@ -41,14 +41,14 @@ namespace vietime
     }
   } // namespace
 
-  bool apply_modifier(std::u32string &base, char key)
+  bool apply_modifier(std::u32string &base, char key, InputMethod method)
   {
     if (base.empty())
       return false;
 
     const char32_t last = base.back();
 
-    if (key == 'd' && last == U'd')
+    if (last == U'd' && (key == 'd' || (key == '9' && method == METHOD_VNI)))
     {
       base.back() = U'đ';
       return true;
@@ -62,7 +62,7 @@ namespace vietime
       return false;
     }
 
-    if (key == 'w')
+    if (key == 'w' || (method == METHOD_VNI && (key == '7' || key == '8')))
     {
       for (std::size_t i = 0; i + 1 < v.size(); i++)
       {
@@ -88,7 +88,7 @@ namespace vietime
 
     for (std::size_t i = v.size(); i > 0; i--)
     {
-      if (char32_t r = double_result(v[i - 1], key); r != 0)
+      if (char32_t r = double_result(v[i - 1], key, method); r != 0)
       {
         base[p.nucleus_start + i - 1] = r;
         return true;
