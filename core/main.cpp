@@ -12,7 +12,7 @@ int main(void)
 
   setlocale(LC_ALL, ".UTF-8");
 
-  KeyProcessor kp;
+  vietime::KeyProcessor kp;
   std::string line;
 
   int input_method;
@@ -24,7 +24,7 @@ int main(void)
   if (input_method == 2)
   {
 
-    kp.set_method(METHOD_VNI);
+    kp.set_method(vietime::METHOD_VNI);
   }
 
   std::getline(std::cin, line);

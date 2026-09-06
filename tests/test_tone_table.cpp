@@ -3,6 +3,8 @@
 #include "utf8.h"
 #include "normalize.h"
 
+using namespace vietime;
+
 void run_tone_table_tests()
 {
   check_eq(tone_from_telex('s'), TONE_SAC, "telex s = sac");

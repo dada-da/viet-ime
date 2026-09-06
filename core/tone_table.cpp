@@ -21,60 +21,63 @@ namespace
       {U'y', {U'ý', U'ỳ', U'ỷ', U'ỹ', U'ỵ'}},
   };
 }
-
-Tone tone_from_telex(char key)
+namespace vietime
 {
-  switch (key)
+
+  Tone tone_from_telex(char key)
   {
-  case 's':
-    return TONE_SAC;
-  case 'f':
-    return TONE_HUYEN;
-  case 'r':
-    return TONE_HOI;
-  case 'x':
-    return TONE_NGA;
-  case 'j':
-    return TONE_NANG;
+    switch (key)
+    {
+    case 's':
+      return TONE_SAC;
+    case 'f':
+      return TONE_HUYEN;
+    case 'r':
+      return TONE_HOI;
+    case 'x':
+      return TONE_NGA;
+    case 'j':
+      return TONE_NANG;
 
-  default:
-    return TONE_NONE;
-  }
-}
-
-Tone tone_from_vni(char key)
-{
-  switch (key)
-  {
-  case '1':
-    return TONE_SAC;
-  case '2':
-    return TONE_HUYEN;
-  case '3':
-    return TONE_HOI;
-  case '4':
-    return TONE_NGA;
-  case '5':
-    return TONE_NANG;
-
-  default:
-    return TONE_NONE;
-  }
-}
-
-char32_t apply_tone_to_vowel(char32_t vowel, Tone tone)
-{
-  if (tone == TONE_NONE)
-  {
-    return vowel;
+    default:
+      return TONE_NONE;
+    }
   }
 
-  auto it = kToneTable.find(vowel);
-
-  if (it == kToneTable.end())
+  Tone tone_from_vni(char key)
   {
-    return vowel;
+    switch (key)
+    {
+    case '1':
+      return TONE_SAC;
+    case '2':
+      return TONE_HUYEN;
+    case '3':
+      return TONE_HOI;
+    case '4':
+      return TONE_NGA;
+    case '5':
+      return TONE_NANG;
+
+    default:
+      return TONE_NONE;
+    }
   }
 
-  return it->second[static_cast<size_t>(tone)];
+  char32_t apply_tone_to_vowel(char32_t vowel, Tone tone)
+  {
+    if (tone == TONE_NONE)
+    {
+      return vowel;
+    }
+
+    auto it = kToneTable.find(vowel);
+
+    if (it == kToneTable.end())
+    {
+      return vowel;
+    }
+
+    return it->second[static_cast<size_t>(tone)];
+  }
 }

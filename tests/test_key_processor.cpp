@@ -4,7 +4,7 @@
 
 static void check_typing(const char *keys, const std::string &want)
 {
-  KeyProcessor kp;
+  vietime::KeyProcessor kp;
   for (const char *k = keys; *k; ++k)
     kp.handle_key(*k);
   check_str(kp.preedit(), want, std::string("go \"") + keys + "\"");
