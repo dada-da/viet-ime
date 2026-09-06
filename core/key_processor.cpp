@@ -3,7 +3,7 @@
 #include <cstring>
 
 #include "syllable.h"
-#include "telex_engine.h"
+#include "transform_engine.h"
 #include "utf8.h"
 
 KeyProcessor::KeyProcessor(size_t max_len) : max_len_(max_len)

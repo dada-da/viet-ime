@@ -22,7 +22,7 @@ add_library(ime_core STATIC
   core/utf8.cpp
   core/normalize.cpp
   core/syllable.cpp
-  core/telex_engine.cpp)
+  core/transform_engine.cpp)
 
 target_include_directories(ime_core PUBLIC core)
 
