@@ -6,6 +6,9 @@ void test_normalize();
 void run_tone_table_tests();
 void run_pipeline_tests();
 void run_syllable_tests();
+void run_telex_tests();
+void run_vni_tests();
+void run_uppercase_tests();
 
 int main(void)
 {
@@ -14,6 +17,9 @@ int main(void)
   run_tone_table_tests();
   run_pipeline_tests();
   run_syllable_tests();
+  run_telex_tests();
+  run_vni_tests();
+  run_uppercase_tests();
 
   std::cout << "\n"
             << (g_failures == 0 ? "TAT CA PASS" : "CO LOI")

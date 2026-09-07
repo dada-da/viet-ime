@@ -30,7 +30,7 @@ namespace vietime
 
     char32_t horn_or_breve_result(char32_t c)
     {
-      if (char32_t r = horn_result(c); r != 0)
+      if (char32_t r = breve_result(c); r != 0)
       {
         return r;
       }
@@ -69,10 +69,10 @@ namespace vietime
         case '6':
           out = {circumflex_result, false, 0};
           return true;
-        case '8':
+        case '7':
           out = {horn_result, true, 0};
           return true;
-        case '7':
+        case '8':
           out = {breve_result, false, 0};
           return true;
         case '9':

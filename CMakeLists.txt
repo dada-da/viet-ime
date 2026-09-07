@@ -22,7 +22,7 @@ add_library(ime_core STATIC
   core/utf8.cpp
   core/normalize.cpp
   core/syllable.cpp
-  core/transform_engine.cpp)
+)
 
 target_include_directories(ime_core PUBLIC core)
 
@@ -38,7 +38,11 @@ add_executable(ime_tests
   tests/test_normalize.cpp
   tests/test_tone_table.cpp
   tests/test_key_processor.cpp
-  tests/test_syllable.cpp)
+  tests/test_syllable.cpp
+  tests/test_telex.cpp
+  tests/test_vni.cpp
+  tests/test_uppercase.cpp
+)
 
 target_link_libraries(ime_tests PRIVATE ime_core)
 add_test(NAME core COMMAND ime_tests)
