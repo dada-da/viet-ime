@@ -5,12 +5,10 @@ namespace vietime
 {
   namespace
   {
-    char32_t w_result(char32_t c)
+    char32_t horn_result(char32_t c)
     {
       switch (c)
       {
-      case U'a':
-        return U'ă';
       case U'o':
         return U'ơ';
       case U'u':
@@ -20,13 +18,28 @@ namespace vietime
       }
     }
 
-    char32_t double_result(char32_t c, char key, InputMethod method)
+    char32_t breve_result(char32_t c)
     {
-      if ((method == METHOD_VNI && key != '6') || (static_cast<char32_t>(key) != c && method == METHOD_TELEX))
+      if (c == U'a')
       {
-        return 0;
+        return U'ă';
       }
 
+      return 0;
+    }
+
+    char32_t horn_or_breve_result(char32_t c)
+    {
+      if (char32_t r = horn_result(c); r != 0)
+      {
+        return r;
+      }
+
+      return horn_result(c);
+    }
+
+    char32_t circumflex_result(char32_t c)
+    {
       switch (c)
       {
       case U'a':
@@ -39,6 +52,54 @@ namespace vietime
         return 0;
       }
     }
+
+    struct ModRule
+    {
+      char32_t (*map)(char32_t);
+      bool pair_uo;
+      char32_t must_equal;
+    };
+
+    bool rule_for_key(char key, InputMethod method, ModRule &out)
+    {
+      if (method == METHOD_VNI)
+      {
+        switch (key)
+        {
+        case '6':
+          out = {circumflex_result, false, 0};
+          return true;
+        case '8':
+          out = {horn_result, true, 0};
+          return true;
+        case '7':
+          out = {breve_result, false, 0};
+          return true;
+        case '9':
+          out = {nullptr, false, 0};
+          return true;
+        default:
+          return false;
+        }
+      }
+
+      switch (key)
+      {
+      case 'w':
+        out = {horn_or_breve_result, true, 0};
+        return true;
+      case 'd':
+        out = {nullptr, false, 0};
+        return true;
+      case 'a':
+      case 'e':
+      case 'o':
+        out = {circumflex_result, false, static_cast<char32_t>(key)};
+        return true;
+      default:
+        return false;
+      }
+    }
   } // namespace
 
   bool apply_modifier(std::u32string &base, char key, InputMethod method)
@@ -46,10 +107,16 @@ namespace vietime
     if (base.empty())
       return false;
 
-    const char32_t last = base.back();
+    ModRule rule;
+    if (!rule_for_key(key, method, rule))
+      return false;
 
-    if (last == U'd' && (key == 'd' || (key == '9' && method == METHOD_VNI)))
+    if (rule.map == nullptr)
     {
+      if (base.back() != U'd')
+      {
+        return false;
+      }
       base.back() = U'đ';
       return true;
     }
@@ -62,7 +129,7 @@ namespace vietime
       return false;
     }
 
-    if (key == 'w' || (method == METHOD_VNI && (key == '7' || key == '8')))
+    if (rule.pair_uo)
     {
       for (std::size_t i = 0; i + 1 < v.size(); i++)
       {
@@ -73,22 +140,16 @@ namespace vietime
           return true;
         }
       }
-
-      for (std::size_t i = v.size(); i > 0; i--)
-      {
-        if (char32_t r = w_result(v[i - 1]); r != 0)
-        {
-          base[p.nucleus_start + i - 1] = r;
-          return true;
-        }
-      }
-
-      return false;
     }
 
     for (std::size_t i = v.size(); i > 0; i--)
     {
-      if (char32_t r = double_result(v[i - 1], key, method); r != 0)
+      const char32_t c = v[i - 1];
+
+      if (rule.must_equal != 0 && c != rule.must_equal)
+        continue;
+
+      if (char32_t r = rule.map(c); r != 0)
       {
         base[p.nucleus_start + i - 1] = r;
         return true;
