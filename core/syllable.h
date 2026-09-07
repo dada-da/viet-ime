@@ -17,4 +17,5 @@ namespace vietime
   bool is_vowel(char32_t c);
   SyllableParts split_syllable(const std::u32string &s);
   std::size_t find_tone_position(const std::u32string &s);
+  bool has_vowel(const std::u32string &s);
 } // namespace vietime

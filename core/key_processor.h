@@ -4,16 +4,10 @@
 #include <cstddef>
 #include <string>
 #include "tone_table.h"
+#include "input_method.h"
 
 namespace vietime
 {
-
-  enum InputMethod
-  {
-    METHOD_TELEX,
-    METHOD_VNI,
-  };
-
   class KeyProcessor
   {
   public:

@@ -2,7 +2,7 @@
 #define TRANSFORM_ENGINE_H
 
 #include <string>
-#include "key_processor.h"
+#include "input_method.h"
 
 namespace vietime
 {

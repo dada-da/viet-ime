@@ -92,4 +92,17 @@ namespace vietime
     // luật 7: còn lại → nguyên âm đầu tiên cua → của, hoa → hòa, chia → chìa
     return p.nucleus_start;
   }
+
+  bool has_vowel(const std::u32string &s)
+  {
+    for (char32_t c : s)
+    {
+      if (is_vowel(c))
+      {
+        return true;
+      }
+    }
+
+    return false;
+  }
 }

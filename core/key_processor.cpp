@@ -14,7 +14,7 @@ namespace vietime
   bool KeyProcessor::handle_key(char c)
   {
     const Tone t = tone_by_input_method(c);
-    if (t != TONE_NONE)
+    if (t != TONE_NONE && has_vowel(base_))
     {
       tone_ = (tone_ == t) ? TONE_NONE : t;
       return true;

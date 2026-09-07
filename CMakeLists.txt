@@ -49,9 +49,11 @@ foreach(t ime_core ime ime_tests)
   else()
     target_compile_options(${t} PRIVATE -Wall -Wextra)
 
-    target_compile_options(${t} PRIVATE
-      $<$<CONFIG:Debug>:-fsanitize=address,undefined -fno-omit-frame-pointer -g>)
-    target_link_options(${t} PRIVATE
-      $<$<CONFIG:Debug>:-fsanitize=address,undefined>)
+    if(NOT MINGW AND NOT CMAKE_SYSTEM_NAME STREQUAL "Windows")
+      target_compile_options(${t} PRIVATE
+        $<$<CONFIG:Debug>:-fsanitize=address,undefined -fno-omit-frame-pointer -g>)
+      target_link_options(${t} PRIVATE
+        $<$<CONFIG:Debug>:-fsanitize=address,undefined>)
+    endif()
   endif()
 endforeach()
