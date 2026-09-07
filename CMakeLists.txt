@@ -22,6 +22,8 @@ add_library(ime_core STATIC
   core/utf8.cpp
   core/normalize.cpp
   core/syllable.cpp
+  core/transform_engine.cpp
+  core/case_map.cpp
 )
 
 target_include_directories(ime_core PUBLIC core)
@@ -42,6 +44,7 @@ add_executable(ime_tests
   tests/test_telex.cpp
   tests/test_vni.cpp
   tests/test_uppercase.cpp
+  tests/test_case_map.cpp
 )
 
 target_link_libraries(ime_tests PRIVATE ime_core)

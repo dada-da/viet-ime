@@ -4,6 +4,8 @@
 #include "syllable.h"
 #include "transform_engine.h"
 #include "utf8.h"
+#include "case_map.h"
+#include <cassert>
 
 namespace vietime
 {
@@ -13,14 +15,17 @@ namespace vietime
 
   bool KeyProcessor::handle_key(char c)
   {
-    const Tone t = tone_by_input_method(c);
+    bool is_upper = is_upper_ascii(c);
+    char key = is_upper ? to_lower_ascii(c) : c;
+
+    const Tone t = tone_by_input_method(key);
     if (t != TONE_NONE && has_vowel(base_))
     {
       tone_ = (tone_ == t) ? TONE_NONE : t;
       return true;
     }
 
-    if (apply_modifier(base_, c, method_))
+    if (apply_modifier(base_, key, method_))
     {
       return true;
     }
@@ -30,12 +35,16 @@ namespace vietime
       return false;
     }
 
-    base_.push_back(static_cast<char32_t>(static_cast<unsigned char>(c)));
+    upper_.push_back(is_upper ? 1 : 0);
+
+    base_.push_back(static_cast<char32_t>(static_cast<unsigned char>(key)));
+
     return true;
   }
 
   std::u32string KeyProcessor::render() const
   {
+    assert(base_.size() == upper_.size());
     std::u32string out = base_;
 
     if (tone_ != TONE_NONE)
@@ -44,6 +53,14 @@ namespace vietime
       if (pos != NO_TONE_POS)
       {
         out[pos] = apply_tone_to_vowel(out[pos], tone_);
+      }
+    }
+
+    for (size_t i = 0; i < out.size(); i++)
+    {
+      if (upper_[i] == 1)
+      {
+        out[i] = to_upper_viet(out[i]);
       }
     }
 
@@ -57,6 +74,7 @@ namespace vietime
 
   bool KeyProcessor::backspace()
   {
+    assert(base_.size() == upper_.size());
     if (base_.empty())
     {
       if (tone_ == TONE_NONE)
@@ -67,6 +85,7 @@ namespace vietime
     }
 
     base_.pop_back();
+    upper_.pop_back();
     if (base_.empty())
       tone_ = TONE_NONE;
     return true;
@@ -75,6 +94,7 @@ namespace vietime
   void KeyProcessor::reset()
   {
     base_.clear();
+    upper_.clear();
     tone_ = TONE_NONE;
   }
 

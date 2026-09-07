@@ -3,6 +3,7 @@
 
 #include <cstddef>
 #include <string>
+#include <vector>
 #include "tone_table.h"
 #include "input_method.h"
 
@@ -32,6 +33,7 @@ namespace vietime
     Tone tone_by_input_method(char key) const;
 
     std::u32string base_;
+    std::vector<int> upper_;
     Tone tone_ = TONE_NONE;
     size_t max_len_ = 32;
     InputMethod method_ = METHOD_TELEX;
