@@ -6,6 +6,7 @@
 #include <vector>
 #include "tone_table.h"
 #include "input_method.h"
+#include "syllable.h"
 
 namespace vietime
 {
@@ -19,6 +20,7 @@ namespace vietime
     bool backspace();
     void reset();
     void set_method(InputMethod m);
+    void set_tone_placement(TonePlacement p);
 
     std::string preedit() const;
 
@@ -37,6 +39,7 @@ namespace vietime
     Tone tone_ = TONE_NONE;
     size_t max_len_ = 32;
     InputMethod method_ = METHOD_TELEX;
+    TonePlacement tone_placement_ = PLACEMENT_CLASSIC;
   };
 }
 

@@ -51,7 +51,7 @@ namespace vietime
     return p;
   }
 
-  std::size_t find_tone_position(const std::u32string &s)
+  std::size_t find_tone_position(const std::u32string &s, TonePlacement tone_placement)
   {
     const SyllableParts p = split_syllable(s);
     const std::u32string &v = p.nucleus;
@@ -68,6 +68,7 @@ namespace vietime
       return p.nucleus_start + k;
 
     // luật 3: nguyên âm mang dấu phụ khác
+    // Phải sau luật 1: ươ có cả ư lẫn ơ, dấu vào ơ.
     if (auto k = v.find_first_of(U"ăâôư"); k != std::u32string::npos)
       return p.nucleus_start + k;
 
@@ -75,6 +76,15 @@ namespace vietime
     if (v.size() == 1)
     {
       return p.nucleus_start;
+    }
+
+    // luật 4b: âm đệm + âm chính trần, kiểu mới (oà uý thay vì òa úy)
+    if (tone_placement == PLACEMENT_MODERN)
+    {
+      if ((p.nucleus == U"oa" || p.nucleus == U"oe" || p.nucleus == U"uy") && p.coda.empty())
+      {
+        return p.nucleus_start + 1;
+      }
     }
 
     // luật 5: có âm cuối toan → toán, hoan → hoàn

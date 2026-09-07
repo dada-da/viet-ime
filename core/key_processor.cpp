@@ -1,7 +1,6 @@
 #include <cstring>
 
 #include "key_processor.h"
-#include "syllable.h"
 #include "transform_engine.h"
 #include "utf8.h"
 #include "case_map.h"
@@ -49,7 +48,7 @@ namespace vietime
 
     if (tone_ != TONE_NONE)
     {
-      const size_t pos = find_tone_position(out);
+      const size_t pos = find_tone_position(out, tone_placement_);
       if (pos != NO_TONE_POS)
       {
         out[pos] = apply_tone_to_vowel(out[pos], tone_);
@@ -159,5 +158,10 @@ namespace vietime
     default:
       return tone_from_telex(key);
     }
+  }
+
+  void KeyProcessor::set_tone_placement(TonePlacement p)
+  {
+    tone_placement_ = p;
   }
 }

@@ -6,6 +6,12 @@ namespace vietime
 {
   inline constexpr std::size_t NO_TONE_POS = static_cast<std::size_t>(-1);
 
+  enum TonePlacement
+  {
+    PLACEMENT_CLASSIC, // hòa, khỏe, thúy
+    PLACEMENT_MODERN   // hoà, khoẻ, thuý
+  };
+
   struct SyllableParts
   {
     std::u32string initial;
@@ -16,6 +22,6 @@ namespace vietime
 
   bool is_vowel(char32_t c);
   SyllableParts split_syllable(const std::u32string &s);
-  std::size_t find_tone_position(const std::u32string &s);
+  std::size_t find_tone_position(const std::u32string &s, TonePlacement p);
   bool has_vowel(const std::u32string &s);
 } // namespace vietime

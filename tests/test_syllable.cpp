@@ -15,9 +15,9 @@ namespace
     return std::to_string(static_cast<long long>(p));
   }
 
-  void check_pos(const std::u32string &input, std::size_t want, const std::string &rule)
+  void check_pos(const std::u32string &input, std::size_t want, const std::string &rule, TonePlacement placement)
   {
-    const std::size_t got = find_tone_position(input);
+    const std::size_t got = find_tone_position(input, placement);
     const std::string name = "[" + rule + "] " + utf32_to_utf8(input);
 
     check(got == want, name);
@@ -68,43 +68,53 @@ void run_syllable_tests()
   check_parts(U"", U"", U"", U"");
 
   // --- luat 1: o-horn ---
-  check_pos(U"ngươi", 3, "R1");
-  check_pos(U"đươc", 2, "R1");
-  check_pos(U"giương", 3, "R1"); // ngoai le gi + luat o-horn cung luc
+  check_pos(U"ngươi", 3, "R1", PLACEMENT_CLASSIC);
+  check_pos(U"đươc", 2, "R1", PLACEMENT_CLASSIC);
+  check_pos(U"giương", 3, "R1", PLACEMENT_CLASSIC); // ngoai le gi + luat o-horn cung luc
 
   // --- luat 2: e-circ ---
-  check_pos(U"tiêng", 2, "R2");
-  check_pos(U"tiêu", 2, "R2");
-  check_pos(U"nghiêng", 4, "R2");
-  check_pos(U"quyên", 3, "R2"); // qu cat truoc, am chinh "ye-circ"
+  check_pos(U"tiêng", 2, "R2", PLACEMENT_CLASSIC);
+  check_pos(U"tiêu", 2, "R2", PLACEMENT_CLASSIC);
+  check_pos(U"nghiêng", 4, "R2", PLACEMENT_CLASSIC);
+  check_pos(U"quyên", 3, "R2", PLACEMENT_CLASSIC); // qu cat truoc, am chinh "ye-circ"
 
   // --- luat 3: a-breve a-circ o-circ u-horn ---
-  check_pos(U"cưa", 1, "R3");
-  check_pos(U"tuôi", 2, "R3");
-  check_pos(U"uông", 1, "R3");
-  check_pos(U"ăn", 0, "R3"); // vi tri 0 hop le, dung nham voi NO_TONE_POS
+  check_pos(U"cưa", 1, "R3", PLACEMENT_CLASSIC);
+  check_pos(U"tuôi", 2, "R3", PLACEMENT_CLASSIC);
+  check_pos(U"uông", 1, "R3", PLACEMENT_CLASSIC);
+  check_pos(U"ăn", 0, "R3", PLACEMENT_CLASSIC); // vi tri 0 hop le, dung nham voi NO_TONE_POS
 
   // --- luat 4: mot nguyen am ---
-  check_pos(U"ta", 1, "R4");
-  check_pos(U"qua", 2, "R4");
-  check_pos(U"gia", 2, "R4");
-  check_pos(U"quy", 2, "R4");
-  check_pos(U"gi", 1, "R4");
+  check_pos(U"ta", 1, "R4", PLACEMENT_CLASSIC);
+  check_pos(U"qua", 2, "R4", PLACEMENT_CLASSIC);
+  check_pos(U"gia", 2, "R4", PLACEMENT_CLASSIC);
+  check_pos(U"quy", 2, "R4", PLACEMENT_CLASSIC);
+  check_pos(U"gi", 1, "R4", PLACEMENT_CLASSIC);
 
   // --- luat 5: co am cuoi -> nguyen am cuoi ---
-  check_pos(U"toan", 2, "R5");
-  check_pos(U"hoan", 2, "R5");
-  check_pos(U"oanh", 1, "R5");
+  check_pos(U"toan", 2, "R5", PLACEMENT_CLASSIC);
+  check_pos(U"hoan", 2, "R5", PLACEMENT_CLASSIC);
+  check_pos(U"oanh", 1, "R5", PLACEMENT_CLASSIC);
 
   // --- luat 6: 3 nguyen am, khong am cuoi -> giua ---
-  check_pos(U"ngoai", 3, "R6");
+  check_pos(U"ngoai", 3, "R6", PLACEMENT_CLASSIC);
 
   // --- luat 7: con lai -> nguyen am dau ---
-  check_pos(U"cua", 1, "R7");
-  check_pos(U"hoa", 1, "R7");
-  check_pos(U"chia", 2, "R7");
+  check_pos(U"cua", 1, "R7", PLACEMENT_CLASSIC);
+  check_pos(U"hoa", 1, "R7", PLACEMENT_CLASSIC);
+  check_pos(U"chia", 2, "R7", PLACEMENT_CLASSIC);
+
+  check_pos(U"hoa", 1, "PLACEMENT_CLASSIC", PLACEMENT_CLASSIC);
+  check_pos(U"khoe", 2, "PLACEMENT_CLASSIC", PLACEMENT_CLASSIC);
+  check_pos(U"thuy", 2, "PLACEMENT_CLASSIC", PLACEMENT_CLASSIC);
+  check_pos(U"mai", 1, "PLACEMENT_CLASSIC_EDGE_CASE", PLACEMENT_CLASSIC);
+
+  check_pos(U"hoa", 2, "PLACEMENT_MODERN", PLACEMENT_MODERN);
+  check_pos(U"khoe", 3, "PLACEMENT_MODERN", PLACEMENT_MODERN);
+  check_pos(U"thuy", 3, "PLACEMENT_MODERN", PLACEMENT_MODERN);
+  check_pos(U"mai", 1, "PLACEMENT_MODERN_EDGE_CASE", PLACEMENT_MODERN);
 
   // --- khong co nguyen am ---
-  check_pos(U"ng", NO_TONE_POS, "none");
-  check_pos(U"", NO_TONE_POS, "none");
+  check_pos(U"ng", NO_TONE_POS, "none", PLACEMENT_CLASSIC);
+  check_pos(U"", NO_TONE_POS, "none", PLACEMENT_CLASSIC);
 }
