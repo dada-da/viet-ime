@@ -27,8 +27,8 @@ void run_pipeline_tests()
   check_typing("dduwowcj", "được");
   check_typing("dduocwj", "được");
   check_typing("tuooir", "tuổi");
-  check_typing("toansj", "toạn"); // thanh mới đè thanh cũ
-  check_typing("toanss", "toan"); // gõ lại = bỏ dấu
+  check_typing("toansj", "toạn");  // thanh mới đè thanh cũ
+  check_typing("toanss", "toans"); // gõ lại = bỏ dấu
   check_typing("ngoaif", "ngoài");
   check_typing("khoongs", "khống"); // oo tìm ngược, không đụng luật cặp
   check_typing("quoocs", "quốc");   // ngoại lệ qu: u ở âm đầu, oo áp lên o

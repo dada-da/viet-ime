@@ -28,7 +28,6 @@ add_library(ime_core STATIC
   core/transform_engine.cpp
   core/case_map.cpp
 )
-
 target_include_directories(ime_core PUBLIC core)
 
 add_executable(ime core/main.cpp)
@@ -48,6 +47,7 @@ add_executable(ime_tests
   tests/test_vni.cpp
   tests/test_uppercase.cpp
   tests/test_case_map.cpp
+  tests/test_undo.cpp
 )
 
 target_link_libraries(ime_tests PRIVATE ime_core)

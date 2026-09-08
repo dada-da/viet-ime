@@ -13,6 +13,7 @@ void run_telex_tests();
 void run_vni_tests();
 void run_uppercase_tests();
 void run_case_map_tests();
+void test_undo();
 
 int main(void)
 {
@@ -25,6 +26,7 @@ int main(void)
   run_vni_tests();
   run_uppercase_tests();
   run_case_map_tests();
+  test_undo();
 
   std::cout << "\n"
             << (g_failures == 0 ? "TAT CA PASS" : "CO LOI")

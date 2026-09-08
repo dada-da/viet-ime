@@ -9,7 +9,16 @@
 
 namespace vietime
 {
-  bool apply_modifier(std::u32string &base, char key, InputMethod method);
+  struct ModResult
+  {
+    bool applied = false;
+    std::size_t pos = 0;
+    std::size_t count = 0;
+    char32_t old_chars[2] = {0, 0};
+  };
+
+  ModResult apply_modifier(std::u32string &base, char key, InputMethod method);
+  bool is_tone_removal_key(char key, InputMethod method);
 }
 
 #endif

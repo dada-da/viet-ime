@@ -73,9 +73,9 @@ static void telex_passthrough()
 
 static void telex_tone_toggle()
 {
-  check_telex("toanss", "toan");
+  check_telex("toanss", "toans");
   check_telex("toansj", "toạn");
-  check_telex("assf", "à");
+  check_telex("assf", "assf");
 }
 
 void run_telex_tests()

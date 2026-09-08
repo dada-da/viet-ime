@@ -105,23 +105,32 @@ namespace vietime
     }
   } // namespace
 
-  bool apply_modifier(std::u32string &base, char key, InputMethod method)
+  ModResult apply_modifier(std::u32string &base, char key, InputMethod method)
   {
+    ModResult mod_result;
+
     if (base.empty())
-      return false;
+      return mod_result;
 
     ModRule rule;
     if (!rule_for_key(key, method, rule))
-      return false;
+      return mod_result;
 
     if (rule.map == nullptr)
     {
       if (base.back() != U'd')
       {
-        return false;
+        return mod_result;
       }
+
+      mod_result.applied = true;
+      mod_result.old_chars[0] = base.back();
+      mod_result.pos = base.size() - 1;
+      mod_result.count = 1;
+
       base.back() = U'đ';
-      return true;
+
+      return mod_result;
     }
 
     const SyllableParts p = split_syllable(base);
@@ -129,7 +138,7 @@ namespace vietime
 
     if (v.empty())
     {
-      return false;
+      return mod_result;
     }
 
     if (rule.pair_uo)
@@ -140,7 +149,15 @@ namespace vietime
         {
           base[p.nucleus_start + i] = U'ư';
           base[p.nucleus_start + i + 1] = U'ơ';
-          return true;
+
+          mod_result.applied = true;
+          mod_result.old_chars[0] = v[i];
+          mod_result.old_chars[1] = v[i + 1];
+          mod_result.count = 2;
+
+          mod_result.pos = p.nucleus_start + i;
+
+          return mod_result;
         }
       }
     }
@@ -155,10 +172,25 @@ namespace vietime
       if (char32_t r = rule.map(c); r != 0)
       {
         base[p.nucleus_start + i - 1] = r;
-        return true;
+        mod_result.applied = true;
+        mod_result.old_chars[0] = c;
+        mod_result.pos = p.nucleus_start + i - 1;
+        mod_result.count = 1;
+
+        return mod_result;
       }
     }
 
-    return false;
+    return mod_result;
+  }
+
+  bool is_tone_removal_key(char key, InputMethod method)
+  {
+    if (method == METHOD_VNI)
+    {
+      return key == '0';
+    }
+
+    return key == 'z';
   }
 } // namespace vietime

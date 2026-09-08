@@ -13,6 +13,16 @@
 
 namespace vietime
 {
+  struct Transform
+  {
+    char key = 0;
+    bool was_tone = false;
+    std::size_t pos = 0;
+    std::size_t count = 0;
+    char32_t old_chars[2] = {0, 0};
+    Tone old_tone = TONE_NONE;
+  };
+
   class KeyProcessor
   {
   public:
@@ -43,6 +53,7 @@ namespace vietime
     size_t max_len_ = 32;
     InputMethod method_ = METHOD_TELEX;
     TonePlacement tone_placement_ = PLACEMENT_CLASSIC;
+    std::vector<Transform> history_;
   };
 }
 

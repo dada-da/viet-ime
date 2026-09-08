@@ -2,12 +2,13 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <cstring>
+#include <cassert>
+#include <string>
 
 #include "key_processor.h"
 #include "transform_engine.h"
 #include "utf8.h"
 #include "case_map.h"
-#include <cassert>
 
 namespace vietime
 {
@@ -20,25 +21,93 @@ namespace vietime
     bool is_upper = is_upper_ascii(c);
     char key = is_upper ? to_lower_ascii(c) : c;
 
-    const Tone t = tone_by_input_method(key);
-    if (t != TONE_NONE && has_vowel(base_))
+    std::size_t last_affect_key_pos = history_.size();
+
+    for (std::size_t i = 0; i < last_affect_key_pos; i++)
     {
-      tone_ = (tone_ == t) ? TONE_NONE : t;
+      if (history_[i].key == key)
+      {
+        last_affect_key_pos = i;
+        break;
+      }
+    }
+
+    if (last_affect_key_pos != history_.size())
+    {
+      if (base_.size() >= max_len_)
+        return false;
+
+      const Transform t = history_[last_affect_key_pos];
+      history_.erase(history_.begin() + static_cast<std::ptrdiff_t>(last_affect_key_pos));
+
+      if (t.was_tone)
+      {
+        tone_ = t.old_tone;
+      }
+      else
+      {
+        for (std::size_t k = 0; k < t.count; k++)
+        {
+          base_[t.pos + k] = t.old_chars[k];
+        }
+      }
+
+      upper_.push_back(is_upper ? 1 : 0);
+      base_.push_back(static_cast<char32_t>(static_cast<unsigned char>(key)));
+
       return true;
     }
 
-    if (apply_modifier(base_, key, method_))
+    if (is_tone_removal_key(key, method_) && tone_ != TONE_NONE)
     {
+      tone_ = TONE_NONE;
+
+      history_.erase(
+          std::remove_if(history_.begin(), history_.end(),
+                         [](const Transform &t)
+                         {
+                           return t.was_tone;
+                         }));
+
+      return true;
+    }
+
+    const Tone t = tone_by_input_method(key);
+    if (t != TONE_NONE && has_vowel(base_))
+    {
+      Transform last;
+      last.key = key;
+      last.was_tone = true;
+      last.old_tone = tone_;
+
+      history_.push_back(last);
+
+      tone_ = t;
+
+      return true;
+    }
+
+    ModResult mod_result = apply_modifier(base_, key, method_);
+
+    if (mod_result.applied)
+    {
+      Transform last;
+      last.key = key;
+      last.was_tone = false;
+      last.pos = mod_result.pos;
+      last.count = mod_result.count;
+      last.old_chars[0] = mod_result.old_chars[0];
+      last.old_chars[1] = mod_result.old_chars[1];
+
+      history_.push_back(last);
+
       return true;
     }
 
     if (base_.size() >= max_len_)
-    {
       return false;
-    }
 
     upper_.push_back(is_upper ? 1 : 0);
-
     base_.push_back(static_cast<char32_t>(static_cast<unsigned char>(key)));
 
     return true;
@@ -77,6 +146,7 @@ namespace vietime
   bool KeyProcessor::backspace()
   {
     assert(base_.size() == upper_.size());
+    history_.clear();
     if (base_.empty())
     {
       if (tone_ == TONE_NONE)
@@ -97,6 +167,7 @@ namespace vietime
   {
     base_.clear();
     upper_.clear();
+    history_.clear();
     tone_ = TONE_NONE;
   }
 
