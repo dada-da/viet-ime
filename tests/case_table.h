@@ -1,3 +1,10 @@
+// SPDX-FileCopyrightText: 2026 Cao Duc Anh <anhcd.151635@gmail.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+//
+// Sinh tự động bởi tools/gen_case_table.py — không sửa tay.
+// Dữ liệu ánh xạ hoa/thường lấy từ Unicode Character Database
+// (https://www.unicode.org/Public/UCD/latest/), Unicode License v3.
+
 #ifndef CASE_TABLE_H
 #define CASE_TABLE_H
 

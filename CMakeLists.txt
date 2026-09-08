@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Cao Duc Anh <anhcd.151635@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 cmake_minimum_required(VERSION 3.20)
 
 project(viet_ime
