@@ -50,6 +50,7 @@ namespace vietime
     std::u32string base_;
     std::vector<int> upper_;
     Tone tone_ = TONE_NONE;
+    bool tone_blocked_ = false;
     size_t max_len_ = 32;
     InputMethod method_ = METHOD_TELEX;
     TonePlacement tone_placement_ = PLACEMENT_CLASSIC;

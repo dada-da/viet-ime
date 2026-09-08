@@ -75,7 +75,7 @@ static void telex_tone_toggle()
 {
   check_telex("toanss", "toans");
   check_telex("toansj", "toạn");
-  check_telex("assf", "assf");
+  check_telex("assf", "asf");
 }
 
 void run_telex_tests()

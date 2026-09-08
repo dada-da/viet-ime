@@ -21,6 +21,23 @@ namespace vietime
     bool is_upper = is_upper_ascii(c);
     char key = is_upper ? to_lower_ascii(c) : c;
 
+    ModResult mod_result = apply_modifier(base_, key, method_);
+
+    if (mod_result.applied)
+    {
+      Transform last;
+      last.key = key;
+      last.was_tone = false;
+      last.pos = mod_result.pos;
+      last.count = mod_result.count;
+      last.old_chars[0] = mod_result.old_chars[0];
+      last.old_chars[1] = mod_result.old_chars[1];
+
+      history_.push_back(last);
+
+      return true;
+    }
+
     std::size_t last_affect_key_pos = history_.size();
 
     for (std::size_t i = 0; i < last_affect_key_pos; i++)
@@ -43,6 +60,7 @@ namespace vietime
       if (t.was_tone)
       {
         tone_ = t.old_tone;
+        tone_blocked_ = true;
       }
       else
       {
@@ -73,7 +91,7 @@ namespace vietime
     }
 
     const Tone t = tone_by_input_method(key);
-    if (t != TONE_NONE && has_vowel(base_))
+    if (t != TONE_NONE && has_vowel(base_) && !tone_blocked_)
     {
       Transform last;
       last.key = key;
@@ -83,23 +101,6 @@ namespace vietime
       history_.push_back(last);
 
       tone_ = t;
-
-      return true;
-    }
-
-    ModResult mod_result = apply_modifier(base_, key, method_);
-
-    if (mod_result.applied)
-    {
-      Transform last;
-      last.key = key;
-      last.was_tone = false;
-      last.pos = mod_result.pos;
-      last.count = mod_result.count;
-      last.old_chars[0] = mod_result.old_chars[0];
-      last.old_chars[1] = mod_result.old_chars[1];
-
-      history_.push_back(last);
 
       return true;
     }
@@ -169,6 +170,7 @@ namespace vietime
     upper_.clear();
     history_.clear();
     tone_ = TONE_NONE;
+    tone_blocked_ = false;
   }
 
   void KeyProcessor::set_method(InputMethod m)

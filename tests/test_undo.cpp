@@ -102,14 +102,14 @@ namespace
     kp.handle_key('a');
     kp.backspace();
     kp.handle_key('a');
-    check_str("backspace xoa last_", kp.preedit(), "a");
+    check_str(kp.preedit(), "a", "backspace xoa last_");
 
     KeyProcessor kp2;
     kp2.handle_key('a');
     kp2.handle_key('a');
     kp2.reset();
     kp2.handle_key('a');
-    check_str("reset xoa last_", kp2.preedit(), "a");
+    check_str(kp2.preedit(), "a", "reset xoa last_");
   }
 } // namespace
 
