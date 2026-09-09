@@ -17,6 +17,7 @@ int main(void)
 
   vietime::KeyProcessor kp;
   std::string line;
+  std::string out;
 
   // int input_method;
 
@@ -34,24 +35,24 @@ int main(void)
 
   for (char c : line)
   {
-    if (c == '-')
+    if (c == '~') // for test
     {
       kp.backspace();
       continue;
     }
 
-    if (kp.handle_key(c))
+    vietime::KeyResult result = kp.handle_key(c);
+
+    if (result.has_commit && result.consumed)
     {
+      out.append(result.commit_text);
       continue;
-    }
-    else
-    {
-      break;
     }
   }
 
-  std::cout << "[" << kp.preedit() << "]\n";
-  std::cout << "Char count = " << kp.char_count() << "\n";
+  out += kp.commit();
+
+  std::cout << "[" << out << "]\n";
 
   return 0;
 }

@@ -15,11 +15,24 @@ inline void check_typing_m(vietime::InputMethod m,
   vietime::KeyProcessor kp;
   kp.set_method(m);
 
+  std::string out;
+
   for (const char *k = keys; *k; ++k)
-    kp.handle_key(*k);
+  {
+
+    vietime::KeyResult result = kp.handle_key(*k);
+
+    if (result.has_commit && result.consumed)
+    {
+      out.append(result.commit_text);
+      continue;
+    }
+  }
+
+  out += kp.commit();
 
   const char *tag = (m == vietime::METHOD_VNI) ? "[VNI] " : "[TLX] ";
-  check_str(kp.preedit(), want, tag + std::string("go \"") + keys + "\"");
+  check_str(out, want, tag + std::string("go \"") + keys + "\"");
 }
 
 inline void check_telex(const char *keys, const std::string &want)

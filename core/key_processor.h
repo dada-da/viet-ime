@@ -23,20 +23,27 @@ namespace vietime
     Tone old_tone = TONE_NONE;
   };
 
+  struct KeyResult
+  {
+    bool consumed = false;
+    bool has_commit = false;
+    std::string commit_text;
+  };
+
   class KeyProcessor
   {
   public:
     KeyProcessor() = default;
     explicit KeyProcessor(size_t max_len);
 
-    bool handle_key(char c);
+    KeyResult handle_key(char c);
     bool backspace();
     void reset();
     void set_method(InputMethod m);
     void set_tone_placement(TonePlacement p);
+    std::string commit();
 
     std::string preedit() const;
-
     bool empty() const;
     size_t char_count() const;
     int copy_preedit(char *out, size_t out_len) const;

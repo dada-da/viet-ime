@@ -8,9 +8,22 @@
 static void check_typing(const char *keys, const std::string &want)
 {
   vietime::KeyProcessor kp;
+  std::string out;
+
   for (const char *k = keys; *k; ++k)
-    kp.handle_key(*k);
-  check_str(kp.preedit(), want, std::string("go \"") + keys + "\"");
+  {
+
+    vietime::KeyResult result = kp.handle_key(*k);
+
+    if (result.has_commit && result.consumed)
+    {
+      out.append(result.commit_text);
+      continue;
+    }
+  }
+
+  out += kp.commit();
+  check_str(out, want, std::string("go \"") + keys + "\"");
 }
 
 void run_pipeline_tests()
@@ -33,4 +46,5 @@ void run_pipeline_tests()
   check_typing("khoongs", "khống"); // oo tìm ngược, không đụng luật cặp
   check_typing("quoocs", "quốc");   // ngoại lệ qu: u ở âm đầu, oo áp lên o
   check_typing("", "");
+  check_typing("tienges vieejt.", "tiếng việt.");
 }

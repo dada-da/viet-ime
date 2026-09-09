@@ -193,4 +193,12 @@ namespace vietime
 
     return key == 'z';
   }
+
+  bool is_word_boundary(char key)
+  {
+    if ((key >= 'A' && key <= 'Z') || (key >= 'a' && key <= 'z') || (key >= '0' && key <= '9'))
+      return false;
+
+    return true;
+  }
 } // namespace vietime

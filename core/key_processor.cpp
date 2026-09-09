@@ -4,6 +4,7 @@
 #include <cstring>
 #include <cassert>
 #include <string>
+#include <algorithm>
 
 #include "key_processor.h"
 #include "transform_engine.h"
@@ -16,10 +17,20 @@ namespace vietime
   {
   }
 
-  bool KeyProcessor::handle_key(char c)
+  KeyResult KeyProcessor::handle_key(char c)
   {
     bool is_upper = is_upper_ascii(c);
     char key = is_upper ? to_lower_ascii(c) : c;
+    KeyResult result;
+
+    if (is_word_boundary(key))
+    {
+      result.commit_text = commit() + c;
+      result.has_commit = true;
+      result.consumed = true;
+
+      return result;
+    }
 
     ModResult mod_result = apply_modifier(base_, key, method_);
 
@@ -34,8 +45,9 @@ namespace vietime
       last.old_chars[1] = mod_result.old_chars[1];
 
       history_.push_back(last);
+      result.consumed = true;
 
-      return true;
+      return result;
     }
 
     std::size_t last_affect_key_pos = history_.size();
@@ -52,7 +64,7 @@ namespace vietime
     if (last_affect_key_pos != history_.size())
     {
       if (base_.size() >= max_len_)
-        return false;
+        return result;
 
       const Transform t = history_[last_affect_key_pos];
       history_.erase(history_.begin() + static_cast<std::ptrdiff_t>(last_affect_key_pos));
@@ -72,8 +84,9 @@ namespace vietime
 
       upper_.push_back(is_upper ? 1 : 0);
       base_.push_back(static_cast<char32_t>(static_cast<unsigned char>(key)));
+      result.consumed = true;
 
-      return true;
+      return result;
     }
 
     if (is_tone_removal_key(key, method_) && tone_ != TONE_NONE)
@@ -85,9 +98,11 @@ namespace vietime
                          [](const Transform &t)
                          {
                            return t.was_tone;
-                         }));
+                         }),
+          history_.end());
+      result.consumed = true;
 
-      return true;
+      return result;
     }
 
     const Tone t = tone_by_input_method(key);
@@ -101,17 +116,20 @@ namespace vietime
       history_.push_back(last);
 
       tone_ = t;
+      result.consumed = true;
 
-      return true;
+      return result;
     }
 
     if (base_.size() >= max_len_)
-      return false;
+      return result;
 
     upper_.push_back(is_upper ? 1 : 0);
     base_.push_back(static_cast<char32_t>(static_cast<unsigned char>(key)));
 
-    return true;
+    result.consumed = true;
+
+    return result;
   }
 
   std::u32string KeyProcessor::render() const
@@ -148,6 +166,8 @@ namespace vietime
   {
     assert(base_.size() == upper_.size());
     history_.clear();
+    tone_blocked_ = false;
+
     if (base_.empty())
     {
       if (tone_ == TONE_NONE)
@@ -239,5 +259,15 @@ namespace vietime
   void KeyProcessor::set_tone_placement(TonePlacement p)
   {
     tone_placement_ = p;
+  }
+
+  std::string KeyProcessor::commit()
+  {
+    if (empty())
+      return "";
+
+    std::string out = preedit();
+    reset();
+    return out;
   }
 }
