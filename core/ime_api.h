@@ -78,11 +78,11 @@ extern "C"
   typedef struct vietime_ctx vietime_ctx;
 
   VIETIME_API vietime_ctx *vietime_create(void);
-  VIETIME_API void vietime_destroy(vietime_ctx *ctx);
+  VIETIME_API int32_t vietime_destroy(vietime_ctx *ctx);
   VIETIME_API VietimeKeyResult vietime_process_key(vietime_ctx *ctx, uint32_t c);
-  VIETIME_API void vietime_reset(vietime_ctx *ctx);
-  VIETIME_API void vietime_set_method(vietime_ctx *ctx, VietimeInputMethod m);
-  VIETIME_API void vietime_set_tone_placement(vietime_ctx *ctx, VietimeTonePlacement p);
+  VIETIME_API int32_t vietime_reset(vietime_ctx *ctx);
+  VIETIME_API int32_t vietime_set_method(vietime_ctx *ctx, VietimeInputMethod m);
+  VIETIME_API int32_t vietime_set_tone_placement(vietime_ctx *ctx, VietimeTonePlacement p);
   VIETIME_API uint32_t vietime_get_version(void);
   VIETIME_API VietimeKeyResult vietime_backspace(vietime_ctx *ctx); // xoá một ký tự trong preedit
   VIETIME_API VietimeKeyResult vietime_flush(vietime_ctx *ctx);     // trả về phần chưa commit trước khi reset
