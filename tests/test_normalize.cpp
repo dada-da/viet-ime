@@ -5,6 +5,8 @@
 #include "normalize.h"
 #include "utf8.h"
 
+using namespace vietime;
+
 struct Case
 {
   std::string in;

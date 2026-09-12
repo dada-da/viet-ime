@@ -8,10 +8,8 @@
 #include "key_processor.h"
 #include "check.h"
 
-inline void check_typing_m(vietime::InputMethod m,
-                           vietime::TonePlacement p,
-                           const char *keys,
-                           const std::string &want)
+inline std::string type_keys(const char *keys, vietime::InputMethod m,
+                             vietime::TonePlacement p = vietime::PLACEMENT_MODERN)
 {
   vietime::KeyProcessor kp;
   kp.set_method(m);
@@ -33,7 +31,19 @@ inline void check_typing_m(vietime::InputMethod m,
 
   out += kp.commit();
 
+  return out;
+};
+
+inline void check_typing_m(vietime::InputMethod m,
+                           vietime::TonePlacement p,
+                           const char *keys,
+                           const std::string &want)
+{
+
+  std::string out = type_keys(keys, m, p);
+
   const char *tag = (m == vietime::METHOD_VNI) ? "[VNI] " : "[TLX] ";
+
   check_str(out, want, tag + std::string("go \"") + keys + "\"");
 }
 

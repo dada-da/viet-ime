@@ -4,6 +4,8 @@
 #include "check.h"
 #include "utf8.h"
 
+using namespace vietime;
+
 void test_utf8()
 {
   // utf8_char_len
