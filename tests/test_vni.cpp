@@ -33,6 +33,7 @@ static void vni_modifiers_do_not_overlap()
 
   check_vni("a9", "a9");
   check_vni("o9", "o9");
+  check_vni("a82", "ằ");
 }
 
 static void vni_uo_pair()
@@ -60,6 +61,7 @@ static void vni_digit_passthrough()
   check_vni("1", "1");
   check_vni("123", "123");
   check_vni("0", "0");
+  check_vni("abc", "abc");
 }
 
 static void vni_telex_keys_are_literal()
@@ -85,6 +87,16 @@ static void vni_real_words()
   check_vni("qua1", "quá");
   check_vni("ho6m2", "hồm");
   check_vni("duo7ng2", "dường");
+  check_vni("hoc5", "học");
+  check_vni("nam2024", "nãm");
+}
+
+static void vni_tone_placement()
+{
+  check_vni_tone_placement("hoa2", "hòa", vietime::PLACEMENT_CLASSIC);
+  check_vni_tone_placement("hoa2", "hoà", vietime::PLACEMENT_MODERN);
+  check_vni_tone_placement("thuy3", "thủy", vietime::PLACEMENT_CLASSIC);
+  check_vni_tone_placement("thuy3", "thuỷ", vietime::PLACEMENT_MODERN);
 }
 
 void run_vni_tests()
@@ -96,4 +108,5 @@ void run_vni_tests()
   vni_digit_passthrough();
   vni_telex_keys_are_literal();
   vni_real_words();
+  vni_tone_placement();
 }

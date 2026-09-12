@@ -24,6 +24,11 @@ static void telex_rules_in_context()
   check_telex("bung", "bung");
   check_telex("buwng", "bưng");
   check_telex("ddan", "đan");
+  check_telex("ddoongf", "đồng");
+  check_telex("muoons", "muốn");
+  check_telex("hocj", "học");
+  check_telex("gif", "gì");
+  check_telex("thuyr", "thuỷ");
 }
 
 static void telex_five_tones()
@@ -43,6 +48,9 @@ static void telex_tone_on_modified_vowel()
   check_telex("oos", "ố");
   check_telex("ows", "ớ");
   check_telex("uws", "ứ");
+  check_telex("awf", "ằ");
+  check_telex("uwx", "ữ");
+  check_telex("owr", "ở");
 }
 
 static void telex_uo_pair()
@@ -69,6 +77,8 @@ static void telex_passthrough()
   check_telex("dd9", "đ9");
   check_telex("sss", "sss");
   check_telex("", "");
+  check_telex("s", "s");
+  check_telex("hello", "hello");
 }
 
 static void telex_tone_toggle()
@@ -76,6 +86,14 @@ static void telex_tone_toggle()
   check_telex("toanss", "toans");
   check_telex("toansj", "toạn");
   check_telex("assf", "asf");
+}
+
+static void telex_tone_placement()
+{
+  check_telex_tone_placement("hoaf", "hòa", vietime::PLACEMENT_CLASSIC);
+  check_telex_tone_placement("hoaf", "hoà", vietime::PLACEMENT_MODERN);
+  check_telex_tone_placement("thuyr", "thủy", vietime::PLACEMENT_CLASSIC);
+  check_telex_tone_placement("thuyr", "thuỷ", vietime::PLACEMENT_MODERN);
 }
 
 void run_telex_tests()
@@ -87,4 +105,5 @@ void run_telex_tests()
   telex_uo_pair();
   telex_passthrough();
   telex_tone_toggle();
+  telex_tone_placement();
 }

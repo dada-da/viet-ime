@@ -4,8 +4,35 @@
 #include <string>
 #include "key_processor.h"
 #include "check.h"
+#include "utf8.h"
 
 static void check_typing(const char *keys, const std::string &want)
+{
+  vietime::KeyProcessor kp;
+  std::string out;
+
+  for (const char *k = keys; *k; ++k)
+  {
+    if (*k == '~') // for test
+    {
+      kp.backspace();
+      continue;
+    }
+
+    vietime::KeyResult result = kp.handle_key(*k);
+
+    if (result.has_commit && result.consumed)
+    {
+      out.append(result.commit_text);
+      continue;
+    }
+  }
+
+  out += kp.commit();
+  check_str(out, want, std::string("go \"") + keys + "\"");
+}
+
+static void check_char_count(const char *keys)
 {
   vietime::KeyProcessor kp;
   std::string out;
@@ -20,10 +47,16 @@ static void check_typing(const char *keys, const std::string &want)
       out.append(result.commit_text);
       continue;
     }
+
+    std::string msg;
+    msg += "char_count - utf8_char_count: ";
+    msg += std::string(1, *k);
+
+    check(kp.char_count() == utf8_char_count(kp.preedit()), msg);
   }
 
   out += kp.commit();
-  check_str(out, want, std::string("go \"") + keys + "\"");
+  check(kp.char_count() == utf8_char_count(kp.preedit()), "char_count - utf8_char_count: " + out);
 }
 
 void run_pipeline_tests()
@@ -47,4 +80,16 @@ void run_pipeline_tests()
   check_typing("quoocs", "quốc");   // ngoại lệ qu: u ở âm đầu, oo áp lên o
   check_typing("", "");
   check_typing("tienges vieejt.", "tiếng việt.");
+  check_typing("caf phee", "cà phê");
+  check_typing("tienges~", "tiến");
+}
+
+void run_char_count_tests()
+{
+  check_char_count("");
+  check_char_count("a");
+  check_char_count("tieengs");
+  check_char_count("NGUwOwIF");
+  check_char_count("dduwowcj");
+  check_char_count("hoaf");
 }

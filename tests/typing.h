@@ -9,11 +9,13 @@
 #include "check.h"
 
 inline void check_typing_m(vietime::InputMethod m,
+                           vietime::TonePlacement p,
                            const char *keys,
                            const std::string &want)
 {
   vietime::KeyProcessor kp;
   kp.set_method(m);
+  kp.set_tone_placement(p);
 
   std::string out;
 
@@ -37,12 +39,22 @@ inline void check_typing_m(vietime::InputMethod m,
 
 inline void check_telex(const char *keys, const std::string &want)
 {
-  check_typing_m(vietime::METHOD_TELEX, keys, want);
+  check_typing_m(vietime::METHOD_TELEX, vietime::PLACEMENT_MODERN, keys, want);
 }
 
 inline void check_vni(const char *keys, const std::string &want)
 {
-  check_typing_m(vietime::METHOD_VNI, keys, want);
+  check_typing_m(vietime::METHOD_VNI, vietime::PLACEMENT_MODERN, keys, want);
+}
+
+inline void check_telex_tone_placement(const char *keys, const std::string &want, vietime::TonePlacement p)
+{
+  check_typing_m(vietime::METHOD_TELEX, p, keys, want);
+}
+
+inline void check_vni_tone_placement(const char *keys, const std::string &want, vietime::TonePlacement p)
+{
+  check_typing_m(vietime::METHOD_VNI, p, keys, want);
 }
 
 #endif /* TYPING_H */

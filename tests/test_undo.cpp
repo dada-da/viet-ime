@@ -83,6 +83,7 @@ namespace
     check_vni("na20", "na");
     check_vni("a0", "a0");
     check_vni("tie6ng10", "tiêng");
+    check_vni("a11", "a1");
   }
 
   void test_no_regression()

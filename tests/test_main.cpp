@@ -15,6 +15,7 @@ void run_uppercase_tests();
 void run_case_map_tests();
 void test_undo();
 void test_api_util();
+void run_char_count_tests();
 
 int main(void)
 {
@@ -29,10 +30,12 @@ int main(void)
   run_case_map_tests();
   test_undo();
   test_api_util();
+  run_char_count_tests();
 
   std::cout << "\n"
             << (g_failures == 0 ? "TAT CA PASS" : "CO LOI")
-            << " (" << g_failures << " failed)\n";
+            << ": " << g_passes << " pass, " << g_failures << " fail, "
+            << (g_passes + g_failures) << " tong\n";
 
   return g_failures == 0 ? 0 : 1;
 }

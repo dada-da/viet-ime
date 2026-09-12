@@ -11,9 +11,9 @@ static void upper_initial_consonant()
 {
   check_telex("Vieejt", "Việt");
   check_telex("Nguwowif", "Người");
-  check_telex("Hoaf", "Hòa");
+  check_telex("Hoaf", "Hoà");
   check_vni("Vie6t5", "Việt");
-  check_vni("Hoa2", "Hòa");
+  check_vni("Hoa2", "Hoà");
 }
 
 static void upper_on_modified_vowel()
@@ -50,6 +50,7 @@ static void upper_whole_word()
   check_telex("VIEEJT", "VIỆT");
   check_telex("DDOONGF", "ĐỒNG");
   check_telex("NGUWOWIF", "NGƯỜI");
+  check_telex("TIEENGS", "TIẾNG");
   check_vni("HA2", "HÀ");
   check_vni("VIE6T5", "VIỆT");
   check_vni("NGU7O7I2", "NGƯỜI");

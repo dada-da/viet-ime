@@ -21,7 +21,9 @@ namespace
 void check(bool ok, const std::string &name)
 {
   std::cout << (ok ? "PASS  " : "FAIL  ") << name << "\n";
-  if (!ok)
+  if (ok)
+    ++g_passes;
+  else
     ++g_failures;
 }
 
