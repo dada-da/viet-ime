@@ -47,6 +47,9 @@ target_include_directories(ime_core PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/core")
 
 set_target_properties(ime_core PROPERTIES
   POSITION_INDEPENDENT_CODE ON
+  C_VISIBILITY_PRESET hidden
+  CXX_VISIBILITY_PRESET hidden
+  VISIBILITY_INLINES_HIDDEN ON
 )
 
 # vietime — thư viện động công khai
@@ -57,7 +60,6 @@ add_library(vietime SHARED
 target_include_directories(vietime PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/core")
 
 target_link_libraries(vietime PRIVATE ime_core)
-
 
 target_compile_definitions(vietime PRIVATE VIETIME_EXPORTS)
 
@@ -93,7 +95,11 @@ target_link_libraries(ime_tests PRIVATE ime_core)
 target_include_directories(ime_tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/tests")
 add_test(NAME core COMMAND ime_tests)
 
-foreach(t ime_core vietime ime ime_tests)
+add_executable(type_sentence tests/type_sentence.c)
+target_link_libraries(type_sentence PRIVATE vietime)
+add_test(NAME c_sentence COMMAND type_sentence)
+
+foreach(t ime_core vietime ime ime_tests type_sentence)
   if(MSVC)
     target_compile_options(${t} PRIVATE /W4 /utf-8 $<$<CONFIG:Debug>:/WX>)
   else()

@@ -44,12 +44,16 @@ extern "C" VietimeKeyResult vietime_process_key(vietime_ctx *ctx, uint32_t c)
       return key_result;
     }
 
+    key_result.backspace_count = ctx->kp.char_count();
+
     vietime::KeyResult result = ctx->kp.handle_key(c);
+
     key_result.key_consumed = result.consumed;
 
     if (result.has_commit)
     {
       key_result.text_committed = true;
+      key_result.backspace_count = 0;
 
       size_t length = vietime::copy_text(key_result.text, result.commit_text);
 
