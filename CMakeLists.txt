@@ -76,6 +76,8 @@ target_link_libraries(ime PRIVATE ime_core)
 
 enable_testing()
 
+# ime_tests — test cho logic bên trong core. Link ime_core TĨNH, không
+# đụng tới libvietime.
 add_executable(ime_tests
   tests/check.cpp
   tests/test_main.cpp
@@ -95,16 +97,25 @@ target_link_libraries(ime_tests PRIVATE ime_core)
 target_include_directories(ime_tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/tests")
 add_test(NAME core COMMAND ime_tests)
 
+add_executable(api_tests
+  tests/check.cpp
+  tests/api_test_main.cpp
+  tests/test_edge_case.cpp
+)
+target_link_libraries(api_tests PRIVATE vietime)
+target_include_directories(api_tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/tests")
+add_test(NAME api COMMAND api_tests)
+
 add_executable(type_sentence tests/type_sentence.c)
 target_link_libraries(type_sentence PRIVATE vietime)
 add_test(NAME c_sentence COMMAND type_sentence)
 
-foreach(t ime_core vietime ime ime_tests type_sentence)
+foreach(t ime_core vietime ime ime_tests api_tests type_sentence)
   if(MSVC)
     target_compile_options(${t} PRIVATE /W4 /utf-8 $<$<CONFIG:Debug>:/WX>)
   else()
     target_compile_options(${t} PRIVATE
-      -Wall -Wextra
+      -Wall -Wextra -Wshadow
       $<$<CONFIG:Debug>:-Werror>)
 
     if(NOT MINGW AND NOT CMAKE_SYSTEM_NAME STREQUAL "Windows")
