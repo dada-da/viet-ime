@@ -62,7 +62,7 @@ dùng nhìn thấy phải là đầu của phần được commit.
 | `test_vni.cpp`           | Vector VNI, gồm các ca chữ số phải đi thẳng                  |
 | `test_uppercase.cpp`     | Mặt nạ chữ hoa                                               |
 | `test_undo.cpp`          | Hoàn tác lặp phím, phím xoá dấu, backspace                   |
-| `test_api_util.cpp`      | `copy_text` (cắt ở 63 byte, luôn ghi NUL)                    |
+| `test_api_util.cpp`      | `copy_text` (cắt ở 96 byte, luôn ghi NUL)                    |
 
 `case_table.h` là file **sinh ra** bằng `tools/gen_case_table.py` từ bảng
 Unicode, được commit sẵn vào repo. Không sửa tay; sửa script rồi sinh lại.

@@ -63,24 +63,24 @@ void test_api_util()
   {
     std::string src(VIETIME_MAX_TEXT_BYTES - 1, 'x');
     Out r = run(src);
-    check_eq<std::size_t>(r.n, VIETIME_MAX_TEXT_BYTES - 1, "copy_text: 63 byte chép đủ");
-    check_str(as_cstr(r), src, "copy_text: 63 byte không cắt");
+    check_eq<std::size_t>(r.n, VIETIME_MAX_TEXT_BYTES - 1, "copy_text: 96 byte chép đủ");
+    check_str(as_cstr(r), src, "copy_text: 96 byte không cắt");
     check_eq<char>(r.text[VIETIME_MAX_TEXT_BYTES - 1], '\0',
-                   "copy_text: 63 byte thì NUL nằm ở ô cuối cùng");
+                   "copy_text: 96 byte thì NUL nằm ở ô cuối cùng");
   }
 
   {
-    std::string src(VIETIME_MAX_TEXT_BYTES, 'x'); // 64 ký tự
+    std::string src(VIETIME_MAX_TEXT_BYTES, 'x'); // 97 ký tự
     Out r = run(src);
-    check_eq<std::size_t>(r.n, VIETIME_MAX_TEXT_BYTES - 1, "copy_text: 64 byte cắt còn 63");
+    check_eq<std::size_t>(r.n, VIETIME_MAX_TEXT_BYTES - 1, "copy_text: 97 byte cắt còn 96");
     check_eq<std::size_t>(as_cstr(r).size(), VIETIME_MAX_TEXT_BYTES - 1,
-                          "copy_text: 64 byte vẫn kết thúc NUL");
+                          "copy_text: 96 byte vẫn kết thúc NUL");
   }
 
   {
     std::string src(200, 'y');
     Out r = run(src);
-    check_eq<std::size_t>(r.n, VIETIME_MAX_TEXT_BYTES - 1, "copy_text: 200 byte cắt còn 63");
+    check_eq<std::size_t>(r.n, VIETIME_MAX_TEXT_BYTES - 1, "copy_text: 200 byte cắt còn 96");
     check_eq<char>(r.text[VIETIME_MAX_TEXT_BYTES - 1], '\0',
                    "copy_text: 200 byte không ghi quá mảng");
   }
@@ -92,14 +92,14 @@ void test_api_util()
 
   {
     std::string src = "x";
-    for (int i = 0; i < 21; i++)
+    for (int i = 0; i < (VIETIME_MAX_TEXT_BYTES - 1) / 3; i++)
       src += "ế";
-    check_eq<std::size_t>(src.size(), 64, "ca 9: chuỗi nguồn đúng 64 byte");
+    check_eq<std::size_t>(src.size(), VIETIME_MAX_TEXT_BYTES, "ca 9: chuỗi nguồn đúng 97 byte");
 
     Out r = run(src);
-    check_eq<std::size_t>(r.n, 63, "copy_text: cắt ở 63 byte");
-    // 63 = 1 + 20*3 + 2  ->  ký tự 'ế' thứ 21 bị cắt còn 2 byte
-    check_eq<unsigned char>(static_cast<unsigned char>(r.text[62]), 0xBA,
+    check_eq<std::size_t>(r.n, VIETIME_MAX_TEXT_BYTES - 1, "copy_text: cắt ở 96 byte");
+    // 96 = 1 + 31*3 + 2  ->  ký tự 'ế' thứ 32 bị cắt còn 2 byte
+    check_eq<unsigned char>(static_cast<unsigned char>(r.text[VIETIME_MAX_TEXT_BYTES - 2]), 0xBA,
                             "copy_text: byte cuối là byte giữa của 'ế' (hành vi hiện tại)");
   }
 }

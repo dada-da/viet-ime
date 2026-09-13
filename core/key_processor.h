@@ -13,6 +13,7 @@
 
 namespace vietime
 {
+  constexpr std::size_t kDefaultMaxLen = 32;
   struct Transform
   {
     char key = 0;
@@ -33,7 +34,8 @@ namespace vietime
   class KeyProcessor
   {
   public:
-    KeyProcessor(size_t max_len);
+    KeyProcessor() = default;
+    explicit KeyProcessor(size_t max_len);
 
     KeyResult handle_key(char c);
     bool backspace();
@@ -52,9 +54,9 @@ namespace vietime
 
     std::u32string base_;
     std::vector<int> upper_;
-    size_t max_len_;
     Tone tone_ = TONE_NONE;
     bool tone_blocked_ = false;
+    size_t max_len_ = kDefaultMaxLen;
     InputMethod method_ = METHOD_TELEX;
     TonePlacement tone_placement_ = PLACEMENT_CLASSIC;
     std::vector<Transform> history_;

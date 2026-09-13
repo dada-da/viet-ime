@@ -2,7 +2,7 @@
 
 int main(void)
 {
-  uint32_t c = 0x01B0;
+  uint32_t c = 0x75;
   VietimeKeyResult result;
   vietime_ctx *ctx;
 

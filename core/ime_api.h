@@ -70,7 +70,7 @@ extern "C"
      * code unit lẻ trong text của người dùng.
      */
     size_t backspace_count;
-    char text[VIETIME_MAX_TEXT_BYTES]; // mã hoá UTF-8, dài 64 bytes nhưng thực tế chỉ có 63, chừa lại 1 byte cho NUL-terminate
+    char text[VIETIME_MAX_TEXT_BYTES]; // mã hoá UTF-8, dài 97 bytes nhưng thực tế chỉ có 96, chừa lại 1 byte cho NUL-terminate
     size_t text_length;                // đếm byte
     int32_t error;
     int32_t text_committed; // 1 là rồi 0 là chưa
