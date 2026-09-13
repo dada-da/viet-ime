@@ -46,9 +46,6 @@ namespace vietime
     std::string preedit() const;
     bool empty() const;
     size_t char_count() const;
-    int copy_preedit(char *out, size_t out_len) const;
-    bool ends_with(char32_t c) const;
-    bool starts_with(const std::string &prefix) const;
 
   private:
     std::u32string render() const;

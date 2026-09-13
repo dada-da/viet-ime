@@ -208,42 +208,6 @@ namespace vietime
     return base_.size();
   }
 
-  int KeyProcessor::copy_preedit(char *out, size_t out_len) const
-  {
-    if (out == nullptr || out_len == 0)
-    {
-      return -1;
-    }
-
-    const std::string s = utf32_to_utf8(render());
-
-    if (s.size() + 1 > out_len)
-    {
-      return -1;
-    }
-
-    std::memcpy(out, s.c_str(), s.size() + 1);
-
-    return static_cast<int>(s.size());
-  }
-
-  bool KeyProcessor::ends_with(char32_t c) const
-  {
-    return !base_.empty() && base_.back() == c;
-  }
-
-  bool KeyProcessor::starts_with(const std::string &prefix) const
-  {
-    const std::string s = utf32_to_utf8(base_);
-
-    if (prefix.size() > s.size())
-    {
-      return false;
-    }
-
-    return s.compare(0, prefix.size(), prefix) == 0;
-  }
-
   Tone KeyProcessor::tone_by_input_method(char key) const
   {
     switch (method_)
