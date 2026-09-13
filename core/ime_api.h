@@ -29,6 +29,14 @@ extern "C"
 
 #define VIETIME_ABI_VERSION 1
 #define VIETIME_MAX_TEXT_BYTES 97
+/* Trần độ dài preedit, tính bằng codepoint. Chạm trần thì libvietime
+ * commit phần đang gõ dở và nhường phím gây tràn lại cho ứng dụng — xem
+ * REQUIRE áp dụng kết quả bên dưới. Hệ quả: đúng một phím đi thẳng về
+ * ứng dụng không qua bộ biến đổi, nên "aa" nằm hai bên ranh giới đó
+ * không hợp thành "â".
+ *
+ * Hệ số 3 trong static_assert ở ime_api.cpp là số byte UTF-8 tối đa của
+ * một ký tự tiếng Việt NFC (ví dụ 'ệ' U+1EC7). */
 #define VIETIME_MAX_CODE_POINT 32
 
   typedef enum
@@ -51,9 +59,27 @@ extern "C"
     VIETIME_INVALID_KEY = -3,
   } VietimeErrorCode;
 
+  /* YÊU CẦU ÁP DỤNG KẾT QUẢ — đọc trước khi viết wrapper.
+   *
+   * Mỗi lần gọi có thể yêu cầu function làm tối đa ba việc. Chúng phải
+   * được làm ĐÚNG THỨ TỰ NÀY:
+   *
+   *   1. xoá lùi `backspace_count` codepoint
+   *   2. chèn `text_length` byte đầu của `text`
+   *   3. nếu `key_consumed == 0`: trả phím thô về cho ứng dụng tự xử lý
+   *
+   * Bước 2 và bước 3 CÙNG XẢY RA khi preedit chạm trần
+   * VIETIME_MAX_CODE_POINT: libvietime commit phần đang gõ dở rồi nhường
+   * phím đó lại. Làm bước 3 trước bước 2 sẽ cho chuỗi đảo thứ tự, và
+   * không có mã lỗi nào báo — gõ 32 chữ rồi 'x' sẽ ra "x" đứng trước 32
+   * chữ đó.
+   *
+   * Vì vậy ĐỪNG viết `if (!key_consumed) return;` — nhánh đó bỏ mất
+   * `text` đi kèm.
+   */
   typedef struct
   {
-    /* Số ký tự người gọi phải xoá lùi trước khi chèn `text`.
+    /* Số ký tự function phải xoá lùi trước khi chèn `text`.
      *
      * ĐƠN VỊ: codepoint Unicode — KHÔNG phải byte, KHÔNG phải cluster.
      *

@@ -2,10 +2,12 @@
 #include "key_processor.h"
 #include "api_util.h"
 #include <string>
-#include <cassert>
 
 static_assert(VIETIME_MAX_CODE_POINT * 3 < VIETIME_MAX_TEXT_BYTES,
               "preedit co the tran text[]");
+
+static_assert(vietime::kDefaultMaxLen == VIETIME_MAX_CODE_POINT,
+              "tran trong core lech voi tran cong bo ra C API");
 
 struct vietime_ctx
 {
@@ -48,11 +50,43 @@ extern "C" VietimeKeyResult vietime_process_key(vietime_ctx *ctx, uint32_t c)
       return key_result;
     }
 
+    if (c == 0)
+    {
+      key_result.error = VIETIME_INVALID_KEY;
+
+      return key_result;
+    }
+
+    if (c < 0x20 || c > 0x7E)
+    {
+      key_result.key_consumed = false;
+
+      return key_result;
+    }
+
+    if (ctx->kp.char_count() >= VIETIME_MAX_CODE_POINT)
+    {
+      std::string text_result = ctx->kp.commit();
+      size_t length = vietime::copy_text(key_result.text, text_result);
+      key_result.text_length = length;
+      key_result.key_consumed = false;
+      key_result.text_committed = true;
+
+      return key_result;
+    }
+
     key_result.backspace_count = ctx->kp.char_count();
 
     vietime::KeyResult result = ctx->kp.handle_key(c);
 
     key_result.key_consumed = result.consumed;
+
+    if (!key_result.key_consumed)
+    {
+      key_result.backspace_count = 0;
+
+      return key_result;
+    }
 
     if (result.has_commit)
     {
