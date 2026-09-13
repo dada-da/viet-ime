@@ -77,22 +77,33 @@ extern "C" VietimeKeyResult vietime_process_key(vietime_ctx *ctx, uint32_t c)
   }
 }
 
-extern "C" int32_t vietime_reset(vietime_ctx *ctx)
+extern "C" VietimeKeyResult vietime_reset(vietime_ctx *ctx)
 {
+  VietimeKeyResult key_result = {};
+
+  if (ctx == nullptr)
+  {
+    key_result.error = VIETIME_NULL_POINTER;
+
+    return key_result;
+  }
+
   try
   {
-    if (ctx == nullptr)
+    if (!ctx->kp.empty())
     {
-      return VIETIME_NULL_POINTER;
+      key_result.backspace_count = ctx->kp.char_count();
+      ctx->kp.reset();
+      key_result.key_consumed = false;
     }
 
-    ctx->kp.reset();
-
-    return VIETIME_OK;
+    return key_result;
   }
   catch (...)
   {
-    return VIETIME_UNKNOWN;
+    key_result.error = VIETIME_UNKNOWN;
+
+    return key_result;
   }
 }
 

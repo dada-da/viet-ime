@@ -47,6 +47,7 @@ extern "C"
     VIETIME_OK = 0,
     VIETIME_NULL_POINTER = -1,
     VIETIME_UNKNOWN = -2,
+    VIETIME_INVALID_KEY = -3,
   } VietimeErrorCode;
 
   typedef struct
@@ -80,7 +81,7 @@ extern "C"
   VIETIME_API vietime_ctx *vietime_create(void);
   VIETIME_API int32_t vietime_destroy(vietime_ctx *ctx);
   VIETIME_API VietimeKeyResult vietime_process_key(vietime_ctx *ctx, uint32_t c);
-  VIETIME_API int32_t vietime_reset(vietime_ctx *ctx);
+  VIETIME_API VietimeKeyResult vietime_reset(vietime_ctx *ctx); // bỏ đi toàn bộ ký tự trong preedit chứ không commit, backspace_count là số ký tự cần xoá. Muốn giữ lại text thì gọi vietime_flush trước
   VIETIME_API int32_t vietime_set_method(vietime_ctx *ctx, VietimeInputMethod m);
   VIETIME_API int32_t vietime_set_tone_placement(vietime_ctx *ctx, VietimeTonePlacement p);
   VIETIME_API uint32_t vietime_get_version(void);
