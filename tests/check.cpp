@@ -6,6 +6,8 @@
 #include <cstdio>
 #include <iostream>
 
+using namespace vietime;
+
 namespace
 {
   void print_hex(const char *label, const std::string &s)

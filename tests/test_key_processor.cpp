@@ -6,6 +6,8 @@
 #include "check.h"
 #include "utf8.h"
 
+using namespace vietime;
+
 static void check_typing(const char *keys, const std::string &want)
 {
   vietime::KeyProcessor kp;

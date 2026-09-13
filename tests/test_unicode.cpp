@@ -2,25 +2,63 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <cstddef>
+#include <cstdio>
 #include <string>
 
 #include "check.h"
 #include "input_method.h"
 #include "normalize.h"
-#include "utf8.h"
-#include "input_method.h"
 #include "syllable.h"
 #include "typing.h"
+#include "utf8.h"
 
-std::string format_cps(const std::u32string &s);
+std::string format_cps(const std::u32string &s)
+{
+  std::string out;
+  char buf[16];
+
+  for (char32_t c : s)
+  {
+    if (!out.empty())
+    {
+      out += ' ';
+    }
+
+    std::snprintf(buf, sizeof buf, "U+%04X", static_cast<unsigned>(c));
+    out += buf;
+  }
+
+  return out;
+}
+
 void check_cps(const std::string &actual_utf8, const std::u32string &expected,
-               const char *name);
+               const char *name)
+{
+  check_str(format_cps(vietime::utf8_to_utf32(actual_utf8)),
+            format_cps(expected), name);
+}
+
 void check_detects_mismatch(const std::string &actual_utf8,
                             const std::u32string &wrong_expected,
-                            const char *name);
+                            const char *name)
+{
+  const int before = g_failures;
+  const std::string label = std::string(name) + "  [dong FAIL duoi day la co y]";
+
+  check_cps(actual_utf8, wrong_expected, label.c_str());
+
+  const int detected = g_failures - before;
+  g_failures = before;
+
+  check_eq<int>(detected, 1, name);
+}
 
 namespace
 {
+
+  // Quy ước file này: chữ ASCII viết thẳng, chữ có dấu viết bằng \uXXXX.
+  // KHÔNG BAO GIỜ U"tiếng" — nếu file lưu dạng NFD, literal đó im lặng thành 7 cp.
+  // \u nhận đúng 4 chữ số hex nên "\u1EE3c" an toàn; \x thì tham lam, đừng dùng.
 
   struct EngineCase
   {
@@ -39,6 +77,8 @@ namespace
       {"dduocwj", vietime::METHOD_TELEX, U"\u0111\u01B0\u1EE3c", 8, "A duoc telex"},
       {"tie6ng1", vietime::METHOD_VNI, U"ti\u1EBFng", 7, "A tieng vni = telex"},
       {"ngu7o7i2", vietime::METHOD_VNI, U"ng\u01B0\u1EDDi", 8, "A nguoi vni = telex"},
+      {"eesj", vietime::METHOD_TELEX, U"\u1EC7", 3, "A ee sac nang -> e nang (khong phu am)"},
+      {"ddoongf", vietime::METHOD_TELEX, U"\u0111\u1ED3ng", 7, "A dong (4 cp / 7 byte)"},
 
       // B. Một phím biến đổi -> một ký tự (ả, ạ là 3 byte, còn lại 2)
       {"aa", vietime::METHOD_TELEX, U"\u00E2", 2, "B aa"},
@@ -62,6 +102,7 @@ namespace
       {"Ow", vietime::METHOD_TELEX, U"\u01A0", 2, "C Ow"},
   };
 
+  // D. Kỳ vọng NFD cố ý — check_cps PHẢI thất bại đúng một lần mỗi dòng
   struct MismatchCase
   {
     const char *keys;
@@ -74,6 +115,7 @@ namespace
       {"nguwowif", U"ngu\u031Bo\u031B\u0300i", "D nguoi NFD (8 cp, 11 byte)"},
   };
 
+  // E. to_nfc với đầu vào NFD — đối chiếu unicodedata.normalize("NFC")
   struct NfcCase
   {
     std::u32string input;
@@ -99,6 +141,7 @@ namespace
 
 void run_unicode_tests()
 {
+  // Test cho chính format_cps
   check_str(format_cps(U""), "", "format_cps rong");
   check_str(format_cps(U"\u00E2"), "U+00E2", "format_cps 4 chu so");
   check_str(format_cps(U"a\u1EBF"), "U+0061 U+1EBF", "format_cps hai cp");
@@ -111,6 +154,7 @@ void run_unicode_tests()
     check_eq<std::size_t>(out.size(), c.bytes, c.name);
   }
 
+  // C. Cùng 3 cp, cùng 4 byte — chỉ so code point mới phân biệt được
   check_cps(type_keys("hoaf", vietime::METHOD_TELEX, vietime::PLACEMENT_MODERN),
             U"h\u00F2a", "C hoaf MODERN");
   check_cps(type_keys("hoaf", vietime::METHOD_TELEX, vietime::PLACEMENT_CLASSIC),

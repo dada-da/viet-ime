@@ -7,6 +7,7 @@
 #include <string>
 
 using vietime::copy_text;
+using namespace vietime;
 
 namespace
 {
@@ -19,7 +20,6 @@ namespace
   Out run(const std::string &src)
   {
     Out out;
-    // đổ rác vào buffer để bắt được trường hợp copy_text quên ghi NUL
     for (std::size_t i = 0; i < VIETIME_MAX_TEXT_BYTES; i++)
       out.text[i] = '\xAA';
 
