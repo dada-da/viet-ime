@@ -27,8 +27,9 @@ extern "C"
 {
 #endif
 
-#define VIETIME_MAX_TEXT_BYTES 64
 #define VIETIME_ABI_VERSION 1
+#define VIETIME_MAX_TEXT_BYTES 97
+#define VIETIME_MAX_CODE_POINT 32
 
   typedef enum
   {

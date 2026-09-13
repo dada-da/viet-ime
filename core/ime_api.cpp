@@ -2,10 +2,14 @@
 #include "key_processor.h"
 #include "api_util.h"
 #include <string>
+#include <cassert>
+
+static_assert(VIETIME_MAX_CODE_POINT * 3 < VIETIME_MAX_TEXT_BYTES,
+              "preedit co the tran text[]");
 
 struct vietime_ctx
 {
-  vietime::KeyProcessor kp;
+  vietime::KeyProcessor kp = vietime::KeyProcessor(VIETIME_MAX_CODE_POINT);
 };
 
 extern "C" vietime_ctx *vietime_create(void)
