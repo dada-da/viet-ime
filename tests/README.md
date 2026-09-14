@@ -1,117 +1,166 @@
-# viet-ime — Tests
+# viet-ime - Test suite
 
-Bộ test cho `ime_core` và `libvietime`. Không dùng framework ngoài: runner là
-`check.h` / `check.cpp`, điểm vào là `test_main.cpp`.
+## Bố cục
+
+Hai binary test, phân chia theo **cái được test**, không theo chủ đề.
+
+### `ime_tests` - link `ime_core` tĩnh
+
+Test logic bên trong core. Không đụng tới `libvietime`.
+
+| File                     | Phạm vi                        |
+| ------------------------ | ------------------------------ |
+| `test_utf8.cpp`          | mã hoá/giải mã UTF-8           |
+| `test_normalize.cpp`     | NFC/NFD                        |
+| `test_tone_table.cpp`    | bảng tra dấu                   |
+| `test_key_processor.cpp` | vòng đời buffer, preedit       |
+| `test_syllable.cpp`      | tách âm tiết                   |
+| `test_telex.cpp`         | luật Telex                     |
+| `test_vni.cpp`           | luật VNI                       |
+| `test_uppercase.cpp`     | mặt nạ chữ hoa                 |
+| `test_case_map.cpp`      | `to_upper_viet` theo bảng sinh |
+| `test_undo.cpp`          | hoàn tác lặp phím              |
+| `test_api_util.cpp`      | `copy_text` và tiện ích API    |
+| `test_unicode.cpp`       | so sánh theo code point        |
+
+### `api_tests` - link `libvietime` động
+
+Test bề mặt C API công khai qua ranh giới thư viện: `test_edge_case.cpp`.
+
+### `type_sentence` - test C thuần
+
+Xác nhận một chương trình **C** (không phải C++) link được vào
+`libvietime` và gõ hết một câu. Đây là test canh ABI: hỏng khi header
+rò rỉ thứ gì đó chỉ C++ hiểu.
+
+### `fuzz_keys` - fuzzer bất biến
+
+Sinh phím có trọng số, dựng một tài liệu mô phỏng, kiểm tra bất biến sau
+**mỗi** lời gọi API.
+
+**không** kiểm tính đúng của nội dung. Gõ `tieengs` ra `tiếng` hay ra
+`tiengs` thì mọi bất biến đều xanh như nhau. `fuzz_keys` xanh không phải
+bằng chứng engine đúng - đó là việc của các test theo bảng ở trên.
+
+Bất biến đang kiểm:
+
+| #   | Nội dung                                                            |
+| --- | ------------------------------------------------------------------- |
+| BB1 | `error` thuộc enum đã định nghĩa                                    |
+| BB2 | `text_committed`, `key_consumed` đúng là 0 hoặc 1                   |
+| BB3 | `text_length < VIETIME_MAX_TEXT_BYTES`                              |
+| BB4 | `text[text_length] == '\0'`                                         |
+| BB5 | `text` là UTF-8 hợp lệ (bộ giải mã độc lập, không dùng `core/utf8`) |
+| BB6 | đầu ra ở dạng NFC, không có dấu tổ hợp rời                          |
+| BB7 | `backspace_count` không ăn sang chữ có sẵn của ứng dụng             |
+| BB8 | `backspace_count` ≤ độ dài preedit trước lời gọi                    |
+| BB9 | preedit ≤ `VIETIME_MAX_CODE_POINT`                                  |
+
+Fuzzer in seed **trước** vòng lặp, không phải khi bắt được lỗi. Crash
+nghĩa là không bao giờ tới được dòng in ở cuối, và một fuzzer không tái
+hiện được crash của chính nó thì vô dụng.
+
+Replay: `./fuzz_keys <seed>` hoặc `./fuzz_keys <seed> <số lượt>`.
 
 ## Chạy
 
-```sh
+```
 cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug
 cmake --build build
-ctest --test-dir build              # chạy mọi target test
-./build/ime_tests                   # xem từng ca
+ctest --test-dir build --output-on-failure
 ```
 
-Build `Debug` bật `-Werror` và, trên Linux/macOS, AddressSanitizer +
-UndefinedBehaviorSanitizer cho mọi target. Một test đọc/ghi lố bộ nhớ sẽ
-dừng ngay với báo cáo của ASan, kể cả khi kết quả so sánh vẫn đúng.
+Một test riêng: `ctest --test-dir build -R fuzz --output-on-failure`
 
-## Đọc kết quả
+Cấu hình khác:
 
-Mỗi ca in đúng một dòng. Dòng cuối là số đếm:
+| Mục đích                              | Flag                                           |
+| ------------------------------------- | ---------------------------------------------- |
+| Sanitizer (mặc định, chỉ Linux/macOS) | `-DVIETIME_SANITIZE=ON`                        |
+| Cho valgrind                          | `-DVIETIME_SANITIZE=OFF`                       |
+| Coverage                              | `-DVIETIME_SANITIZE=OFF -DVIETIME_COVERAGE=ON` |
 
-```
-PASS  [TLX] go "tieengs"
-FAIL  [TLX] go "saw"
-    want: U+0073 U+0103 | să
-    got:  U+0103 | ă
-...
-CO LOI: 727 pass, 1 fail, 728 tong
-```
+Sanitizer và coverage loại trừ nhau - CMake báo lỗi nếu bật cả hai. ASan
+làm méo số đếm dòng của gcov.
 
-- Chuỗi được so theo byte UTF-8, tương đương so theo dãy codepoint. Khi đỏ,
-  `check_str` in ra từng codepoint để thấy khác biệt mà mắt không thấy
-  (ví dụ NFC `ế` U+1EBF so với NFD `ê` + U+0301).
-- `ime_tests` thoát với mã **1** khi có ít nhất một ca đỏ, **0** khi tất cả
-  xanh. `ctest` và CI dựa vào mã này.
+## CI
 
-## Các target
+| Job                      | Chạy khi                | Chặn merge |
+| ------------------------ | ----------------------- | ---------- |
+| `test (linux-gcc)`       | mọi push                | có         |
+| `test (windows-ucrt64)`  | mọi push                | có         |
+| `asan + ubsan + lsan`    | mọi push                | có         |
+| `valgrind memcheck`      | mọi push                | có         |
+| `coverage (core >= 80%)` | mọi push                | có         |
+| `fuzz 1e6 (nightly)`     | 02:00 UTC, hoặc gọi tay | **không**  |
 
-| Target          | Link với            | Nội dung                                           |
-| --------------- | ------------------- | -------------------------------------------------- |
-| `ime_tests`     | `ime_core` (tĩnh)   | Mọi test C++ bên dưới                              |
-| `type_sentence` | `libvietime` (động) | Chương trình C thuần gõ `Tieengs Vieejt` qua API C |
+`fuzz-long` không chặn merge vì chạy theo lịch chứ không theo commit -
+lỗi tìm ra thuộc về code đã merge từ trước. Đỏ ở đó thì mở issue, không
+revert mù.
 
-`type_sentence` là DoD của Day 28: nó chứng minh API C đủ dùng mà không cần
-chạm vào `ime_core`. Nó cũng kiểm hợp đồng `backspace_count`: preedit người
-dùng nhìn thấy phải là đầu của phần được commit.
+Ngưỡng coverage 80% chỉ tính `core/`, loại `tests/` và `core/main.cpp`.
+Gộp `tests/` vào sẽ cho một con số cao và vô nghĩa.
 
-`api_compile_check.c` hiện **không** nằm trong CMake.
+## Chính sách hồi quy
 
-## Các file
+### Mỗi bug đẻ ra một test, trước khi sửa
 
-| File                     | Kiểm                                                         |
-| ------------------------ | ------------------------------------------------------------ |
-| `test_utf8.cpp`          | Chuyển đổi UTF-8 / UTF-32, `utf8_char_count`, round-trip     |
-| `test_normalize.cpp`     | `to_nfc` với đầu vào NFD, dấu mồ côi, idempotent             |
-| `test_tone_table.cpp`    | `apply_tone_to_vowel`, `tone_from_telex`, `tone_from_vni`    |
-| `test_syllable.cpp`      | `split_syllable`, `find_tone_position` (cả hai kiểu đặt dấu) |
-| `test_case_map.cpp`      | `to_upper_viet` đối chiếu `case_table.h`                     |
-| `test_key_processor.cpp` | Gõ trọn qua `KeyProcessor`; bất biến `char_count()` (G2)     |
-| `test_telex.cpp`         | Vector Telex, lấy từ sheet TestCases                         |
-| `test_vni.cpp`           | Vector VNI, gồm các ca chữ số phải đi thẳng                  |
-| `test_uppercase.cpp`     | Mặt nạ chữ hoa                                               |
-| `test_undo.cpp`          | Hoàn tác lặp phím, phím xoá dấu, backspace                   |
-| `test_api_util.cpp`      | `copy_text` (cắt ở 96 byte, luôn ghi NUL)                    |
+Thứ tự bắt buộc:
 
-`case_table.h` là file **sinh ra** bằng `tools/gen_case_table.py` từ bảng
-Unicode, được commit sẵn vào repo. Không sửa tay; sửa script rồi sinh lại.
+1. Viết ca test mô tả hành vi **mong muốn**
+2. Chạy - phải **đỏ**
+3. Sửa code
+4. Chạy - phải xanh
 
-## Thêm một ca
+### Áp dụng cho cả bug của công cụ test
 
-Một ca gõ phím là một dòng:
+Luật này không chỉ phủ `core/` và `libvietime`. Phủ cả `tests/`,
+`CMakeLists.txt` và `.github/workflows/`.
 
-```cpp
-check_telex("tieengs", "tiếng");
-check_vni("tie6ng1", "tiếng");
-check_telex_tone_placement("hoaf", "hoà", vietime::PLACEMENT_MODERN);
-```
+### Đổi hành vi thì sửa test trước, sửa code sau
 
-Nếu ca đến từ sheet TestCases, ghi mã ca ở cuối dòng (`// TC-019`) để hai
-bên đối chiếu được.
+Một số test đang **khoá hành vi hiện tại**, không phải khẳng định hành vi
+đúng. Chúng tồn tại để không ai đổi hành vi một cách vô tình.
 
-Thêm một file test mới:
+Khi đổi có chủ đích: sửa test trước, xem kết quả đỏ, rồi mới sửa code. Không
+bao giờ sửa code trước rồi chỉnh test cho khớp.
 
-1. Viết `void run_xxx_tests()` trong `tests/test_xxx.cpp`.
-2. Khai báo và gọi nó trong `test_main.cpp`.
-3. Thêm file vào `add_executable(ime_tests ...)` trong `CMakeLists.txt`.
+### Test hàm thuần, không chỉ test đầu-cuối
 
-## Quy tắc hồi quy
+Test đầu-cuối bỏ sót lỗi mà test hàm thuần bắt được ngay. Ví dụ đã gặp:
+`to_upper_viet` sai trong khi 293 test đầu-cuối vẫn xanh, vì chúng chỉ
+chạm 12 trong 74 ký tự và 12 cái đó tình Flag không lộ lỗi.
 
-Các quy tắc này có từ những bug thật đã tốn thời gian của project
-(xem mục F trong `backlog.md`).
+Thêm hàm nội bộ nào có bảng tra hoặc có nhánh, viết test riêng cho nó.
 
-1. **Mọi bug có test trước khi sửa.** Viết ca tái hiện, chạy thấy **đỏ**, rồi
-   mới sửa code, rồi thấy xanh. Một test chưa từng đỏ thì chưa chứng minh
-   được là nó bắt được lỗi. Bug phát hiện ngoài bộ test cũng được thêm một
-   dòng vào sheet TestCases; dòng đó không bao giờ bị xoá.
-2. **Test khoá hành vi: sửa test trước, sửa code sau.** Một số test ghi lại
-   hành vi _đã chốt_ chứ không phải hành vi "đúng" hiển nhiên, ví dụ
-   `nam2024` → `nãm` (VNI), `aAn` → `ân`, `uo` + `w` luôn ra `ươ`, và ca 9
-   của `copy_text`. Muốn đổi hành vi thì đổi test trước, có lý do ghi lại
-   trong `backlog.md`.
-3. **Test hàm thuần, không chỉ test đầu-cuối.** Hàng trăm ca gõ phím từng
-   xanh trong khi `to_upper_viet` và `copy_text` sai, vì các ca đầu-cuối chỉ
-   chạm vào một phần nhỏ đầu vào của chúng.
-4. **Không gõ tay bảng dữ liệu.** Bảng lớn (chữ hoa/thường, bảng dấu) sinh
-   bằng script từ nguồn chuẩn.
-5. **Mọi thay đổi phải giữ `ctest` xanh ở build Debug**, tức là không cảnh
-   báo (`-Werror`) và không báo cáo sanitizer.
+### Bảng dữ liệu phải sinh bằng script, không gõ tay
 
-## Chưa có (Day 33–36)
+74 cặp thường/hoa trong `tests/case_table.h` sinh từ bảng Unicode bằng
+`tools/gen_case_table.py`. Gõ tay một bảng 74 dòng đúng là việc mà bảng
+sinh ra để tránh.
 
-- Edge case và an toàn buffer qua API C (Day 33).
-- Chạy valgrind trên bản build không sanitizer (Day 34).
-- Fuzz 1 000 000 phím (Day 35).
-- CI chạy suite mỗi lần push, và báo cáo coverage tự động (Day 36). Đo thủ
-  công bằng gcov ngày 11/09: `core/` đạt 93% số dòng.
+### Bật cảnh báo, và đọc chúng
+
+Build Debug dùng `-Wall -Wextra -Wshadow -Werror`. Ba Flag này đã bắt được
+lỗi thật mà test không bắt:
+
+- `-Wshadow` bắt lỗi che biến trong `copy_text` khiến hàm luôn trả 1.
+  `-Wall -Wextra` im lặng về test.
+- GCC không cảnh báo biến `std::string` không dùng (chỉ cảnh báo với
+  kiểu có hàm dựng tầm thường như `int`), nên hai dòng chết trong
+  `process_key` lọt qua `-Werror`.
+
+Đừng gỡ `-Werror` để build cho qua. Cảnh báo mới trên GCC phiên bản khác
+là CI đang làm đúng việc.
+
+## Thêm ca test
+
+Ca Telex hoặc VNI mới là thêm **một dòng** vào bảng trong
+`test_telex.cpp` / `test_vni.cpp`. Nếu phải viết hơn một dòng, cấu trúc
+bảng đang sai chỗ nào đó - sửa bảng, đừng viết ca đặc biệt.
+
+Ca cho hành vi API công khai vào `test_edge_case.cpp`.
+
+Bất biến mới cho fuzzer vào `check_invariants()` trong `fuzz_keys.cpp`,
+và **phải kèm một lần phá để xác nhận**: sửa một dòng cho bất biến đó
+sai, chạy, thấy test đỏ, rồi hoàn tác.

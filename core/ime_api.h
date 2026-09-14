@@ -94,6 +94,20 @@ extern "C"
      * dụng. Nếu một codepoint >= U+10000 (emoji, chữ Hán) lọt vào
      * phần được đếm, Windows sẽ xoá lẻ nửa cặp thay thế và để lại một
      * code unit lẻ trong text của người dùng.
+     *
+     * backspace_count có nghĩa với MỌI kết quả, kể cả khi text_committed = 1.
+     * Nó luôn là số codepoint do libvietime sinh ra trước con trỏ cần xoá
+     * trước khi chèn `text`.
+     *
+     * Wrapper nào ÁP DỤNG trường này phụ thuộc vào mô hình gửi chữ:
+     *
+     *   IBus, TSF  — BỎ QUA. Nền tảng tự dọn preedit; wrapper chỉ chọn giữa
+     *                update_preedit_text (text_committed = 0) và
+     *                commit_text (text_committed = 1).
+     *   SendInput  — PHẢI dùng. Preedit cũ đang nằm thật trong tài liệu và
+     *                không ai xoá hộ.
+     *
+     * Trường này không bao giờ đếm sang chữ có sẵn của ứng dụng.
      */
     size_t backspace_count;
     char text[VIETIME_MAX_TEXT_BYTES]; // mã hoá UTF-8, dài 97 bytes nhưng thực tế chỉ có 96, chừa lại 1 byte cho NUL-terminate
