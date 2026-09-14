@@ -34,8 +34,13 @@ std::string format_cps(const std::u32string &s)
 void check_cps(const std::string &actual_utf8, const std::u32string &expected,
                const char *name)
 {
-  check_str(format_cps(vietime::utf8_to_utf32(actual_utf8)),
-            format_cps(expected), name);
+  check(format_cps(vietime::utf8_to_utf32(actual_utf8)) == format_cps(expected), name);
+
+  if (format_cps(vietime::utf8_to_utf32(actual_utf8)) != format_cps(expected))
+  {
+    print_hex("want:", format_cps(expected));
+    print_hex("got:", format_cps(vietime::utf8_to_utf32(actual_utf8)));
+  }
 }
 
 void check_detects_mismatch(const std::string &actual_utf8,
@@ -124,7 +129,25 @@ namespace
   };
 
   const NfcCase kNfcCases[] = {
-      {U"e\u0302\u0301", U"\u1EBF", "E e+mu+sac"},
+      // QUYẾT ĐỊNH: giữ behaviour, CỐ Ý khác NFC chuẩn.
+      //
+      // Unicode: U+0301 và U+0302 cùng lớp kết hợp 230, nên bước sắp xếp theo tiêu chuẩn
+      // không đổi chỗ chúng. 'e' ghép với U+0301 thành 'é' trước, rồi
+      // 'é' + U+0302 không có ký tự dựng sẵn -> U+00E9 U+0302.
+      //
+      // to_nfc dùng cách gom-rồi-giải nên bỏ qua thứ tự -> U+1EBF.
+      //
+      // Chọn behaviour này vì:
+      //   - 'é' + mũ không nằm trong 134 dạng chữ tiếng Việt, trả nó ra là đẩy
+      //     một ký tự vô nghĩa xuống char_count() và backspace_count();
+      //   - Input này không thể do NFD sinh ra (NFD luôn cho mũ trước thanh),
+      //     nên nó chỉ đến từ data hỏng;
+      //   - case a+nặng+mũ ở trên cũng đã bỏ qua thứ tự, chỉ vì khác ccc mà
+      //     tình cờ trùng chuẩn. Để 'e' xử lý khác là rò rỉ chi tiết nội bộ của
+      //     Unicode ra ngoài API.
+      //
+      // Muốn đổi ý: sửa test này trước, sửa to_nfc sau.
+      {U"e\u0301\u0302", U"\u1EBF", "E e+sac+mu (khoan dung, khac NFC chuan)"},
       {U"a\u0323\u0302", U"\u1EAD", "E a+nang+mu"},
       {U"a\u0302\u0323", U"\u1EAD", "E a+mu+nang (dao thu tu)"},
       {U"o\u031B\u0300", U"\u1EDD", "E o+moc+huyen"},
@@ -132,9 +155,6 @@ namespace
       {U"d\u0335", U"d\u0335", "E d+U+0335 khong phai d-stroke"},
       {U"\u1EBF", U"\u1EBF", "E idempotent"},
       {U"\u0301a", U"\u0301a", "E dau mo coi dau chuoi"},
-      // QUYẾT ĐỊNH CỦA BẠN: đây là kết quả NFC chuẩn Unicode.
-      // Nếu chọn khoan dung, đổi thành U"\u1EBF" và ghi lý do vào comment này.
-      {U"e\u0301\u0302", U"\u00E9\u0302", "E e+sac+mu (cung ccc 230)"},
   };
 
 } // namespace
@@ -156,9 +176,9 @@ void run_unicode_tests()
 
   // C. Cùng 3 cp, cùng 4 byte — chỉ so code point mới phân biệt được
   check_cps(type_keys("hoaf", vietime::METHOD_TELEX, vietime::PLACEMENT_MODERN),
-            U"h\u00F2a", "C hoaf MODERN");
+            U"ho\u00E0", "C hoaf MODERN");
   check_cps(type_keys("hoaf", vietime::METHOD_TELEX, vietime::PLACEMENT_CLASSIC),
-            U"ho\u00E0", "C hoaf CLASSIC");
+            U"h\u00F2a", "C hoaf CLASSIC");
 
   for (const MismatchCase &c : kNfdCases)
   {

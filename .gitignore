@@ -36,3 +36,7 @@ xcuserdata/
 *.log
 core.*
 vgcore.*
+
+bld/
+build/
+compile_commands.json

@@ -14,6 +14,7 @@ inline int g_passes = 0;
 void check(bool ok, const std::string &name);
 void check_str(const std::string &got, const std::string &want, const std::string &name);
 void check_char32(char32_t got, char32_t want, const std::string &name);
+void print_hex(const char *label, const std::string &s);
 
 template <typename T>
 void check_eq(const T &got, const T &want, const std::string &name)

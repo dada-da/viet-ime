@@ -79,7 +79,7 @@ extern "C"
    */
   typedef struct
   {
-    /* Số ký tự function phải xoá lùi trước khi chèn `text`.
+    /* Số ký tự wrapper phải xoá lùi trước khi chèn `text`.
      *
      * ĐƠN VỊ: codepoint Unicode — KHÔNG phải byte, KHÔNG phải cluster.
      *

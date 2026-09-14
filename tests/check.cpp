@@ -7,63 +7,6 @@
 
 namespace
 {
-  void print_hex(const char *label, const std::string &s)
-  {
-    std::printf("    %-6s", label);
-
-    std::size_t i = 0;
-
-    while (i < s.size())
-    {
-      const unsigned char b0 = static_cast<unsigned char>(s[i]);
-      std::size_t extra = 0;
-      unsigned long cp = 0;
-
-      if (b0 < 0x80)
-      {
-        cp = b0;
-      }
-      else if ((b0 & 0xE0) == 0xC0)
-      {
-        extra = 1;
-        cp = b0 & 0x1Fu;
-      }
-      else if ((b0 & 0xF0) == 0xE0)
-      {
-        extra = 2;
-        cp = b0 & 0x0Fu;
-      }
-      else if ((b0 & 0xF8) == 0xF0)
-      {
-        extra = 3;
-        cp = b0 & 0x07u;
-      }
-      else
-      {
-        std::printf("U+FFFD ");
-        i++;
-        continue;
-      }
-
-      if (i + extra >= s.size())
-      {
-        std::printf("U+FFFD ");
-        i++;
-        continue;
-      }
-
-      for (std::size_t k = 1; k <= extra; k++)
-      {
-        cp = (cp << 6) | (static_cast<unsigned char>(s[i + k]) & 0x3Fu);
-      }
-
-      std::printf("U+%04lX ", cp);
-      i += extra + 1;
-    }
-
-    std::printf("| %s\n", s.c_str());
-  }
-
   std::string encode_utf8(char32_t c)
   {
     const unsigned long cp = static_cast<unsigned long>(c);
@@ -94,6 +37,63 @@ namespace
 
     return out;
   }
+}
+
+void print_hex(const char *label, const std::string &s)
+{
+  std::printf("    %-6s", label);
+
+  std::size_t i = 0;
+
+  while (i < s.size())
+  {
+    const unsigned char b0 = static_cast<unsigned char>(s[i]);
+    std::size_t extra = 0;
+    unsigned long cp = 0;
+
+    if (b0 < 0x80)
+    {
+      cp = b0;
+    }
+    else if ((b0 & 0xE0) == 0xC0)
+    {
+      extra = 1;
+      cp = b0 & 0x1Fu;
+    }
+    else if ((b0 & 0xF0) == 0xE0)
+    {
+      extra = 2;
+      cp = b0 & 0x0Fu;
+    }
+    else if ((b0 & 0xF8) == 0xF0)
+    {
+      extra = 3;
+      cp = b0 & 0x07u;
+    }
+    else
+    {
+      std::printf("U+FFFD ");
+      i++;
+      continue;
+    }
+
+    if (i + extra >= s.size())
+    {
+      std::printf("U+FFFD ");
+      i++;
+      continue;
+    }
+
+    for (std::size_t k = 1; k <= extra; k++)
+    {
+      cp = (cp << 6) | (static_cast<unsigned char>(s[i + k]) & 0x3Fu);
+    }
+
+    std::printf("U+%04lX ", cp);
+    i += extra + 1;
+  }
+
+  std::printf("| %s\n", s.c_str());
 }
 
 void check(bool ok, const std::string &name)
