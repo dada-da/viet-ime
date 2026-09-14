@@ -8,6 +8,7 @@ project(viet_ime
   DESCRIPTION "Cross-platform Vietnamese input method engine"
   LANGUAGES C CXX)
 
+option(VIETIME_SANITIZE "Bật ASan/UBSan cho build Debug" ON)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 17)
@@ -97,6 +98,10 @@ add_executable(ime_tests
 target_link_libraries(ime_tests PRIVATE ime_core)
 target_include_directories(ime_tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/tests")
 add_test(NAME core COMMAND ime_tests)
+if(VIETIME_SANITIZE AND NOT MSVC AND NOT MINGW)
+  set_tests_properties(core api c_sentence PROPERTIES
+    ENVIRONMENT "ASAN_OPTIONS=detect_leaks=1:abort_on_error=1;UBSAN_OPTIONS=print_stacktrace=1:halt_on_error=1")
+endif()
 
 add_executable(api_tests
   tests/check.cpp
@@ -106,10 +111,18 @@ add_executable(api_tests
 target_link_libraries(api_tests PRIVATE vietime)
 target_include_directories(api_tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/tests")
 add_test(NAME api COMMAND api_tests)
+if(VIETIME_SANITIZE AND NOT MSVC AND NOT MINGW)
+  set_tests_properties(core api c_sentence PROPERTIES
+    ENVIRONMENT "ASAN_OPTIONS=detect_leaks=1:abort_on_error=1;UBSAN_OPTIONS=print_stacktrace=1:halt_on_error=1")
+endif()
 
 add_executable(type_sentence tests/type_sentence.c)
 target_link_libraries(type_sentence PRIVATE vietime)
 add_test(NAME c_sentence COMMAND type_sentence)
+if(VIETIME_SANITIZE AND NOT MSVC AND NOT MINGW)
+  set_tests_properties(core api c_sentence PROPERTIES
+    ENVIRONMENT "ASAN_OPTIONS=detect_leaks=1:abort_on_error=1;UBSAN_OPTIONS=print_stacktrace=1:halt_on_error=1")
+endif()
 
 foreach(t ime_core vietime ime ime_tests api_tests type_sentence)
   if(MSVC)
@@ -121,9 +134,9 @@ foreach(t ime_core vietime ime ime_tests api_tests type_sentence)
 
     if(NOT MINGW AND NOT CMAKE_SYSTEM_NAME STREQUAL "Windows")
       target_compile_options(${t} PRIVATE
-        $<$<CONFIG:Debug>:-fsanitize=address,undefined -fno-omit-frame-pointer -g>)
+        "$<$<AND:$<CONFIG:Debug>,$<BOOL:${VIETIME_SANITIZE}>>:-fsanitize=address,undefined;-fno-sanitize-recover=all;-fno-omit-frame-pointer;-g>")
       target_link_options(${t} PRIVATE
-        $<$<CONFIG:Debug>:-fsanitize=address,undefined>)
+        "$<$<AND:$<CONFIG:Debug>,$<BOOL:${VIETIME_SANITIZE}>>:-fsanitize=address,undefined>")
     endif()
   endif()
 endforeach()
