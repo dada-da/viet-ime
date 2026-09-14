@@ -9,6 +9,8 @@ project(viet_ime
   LANGUAGES C CXX)
 
 option(VIETIME_SANITIZE "Bật ASan/UBSan cho build Debug" ON)
+option(VIETIME_COVERAGE "Bật đo coverage (gcov)" OFF)
+
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 17)
@@ -19,7 +21,12 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   set(CMAKE_BUILD_TYPE Debug CACHE STRING "" FORCE)
 endif()
 
-# Số ABI: đọc thẳng từ core/ime_api.h 
+if(VIETIME_SANITIZE AND VIETIME_COVERAGE)
+  message(FATAL_ERROR
+    "VIETIME_SANITIZE và VIETIME_COVERAGE loại trừ nhau. Chọn một.")
+endif()
+
+# Số ABI: đọc thẳng từ core/ime_api.h
 file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/core/ime_api.h" VIETIME_ABI_LINE
   REGEX "^#define[ \t]+VIETIME_ABI_VERSION[ \t]+[0-9]+")
 string(REGEX REPLACE "^#define[ \t]+VIETIME_ABI_VERSION[ \t]+([0-9]+).*$" "\\1"
@@ -98,10 +105,6 @@ add_executable(ime_tests
 target_link_libraries(ime_tests PRIVATE ime_core)
 target_include_directories(ime_tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/tests")
 add_test(NAME core COMMAND ime_tests)
-if(VIETIME_SANITIZE AND NOT MSVC AND NOT MINGW)
-  set_tests_properties(core api c_sentence PROPERTIES
-    ENVIRONMENT "ASAN_OPTIONS=detect_leaks=1:abort_on_error=1;UBSAN_OPTIONS=print_stacktrace=1:halt_on_error=1")
-endif()
 
 add_executable(api_tests
   tests/check.cpp
@@ -111,20 +114,23 @@ add_executable(api_tests
 target_link_libraries(api_tests PRIVATE vietime)
 target_include_directories(api_tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/tests")
 add_test(NAME api COMMAND api_tests)
-if(VIETIME_SANITIZE AND NOT MSVC AND NOT MINGW)
-  set_tests_properties(core api c_sentence PROPERTIES
-    ENVIRONMENT "ASAN_OPTIONS=detect_leaks=1:abort_on_error=1;UBSAN_OPTIONS=print_stacktrace=1:halt_on_error=1")
-endif()
 
 add_executable(type_sentence tests/type_sentence.c)
 target_link_libraries(type_sentence PRIVATE vietime)
 add_test(NAME c_sentence COMMAND type_sentence)
+
+add_executable(fuzz_keys tests/fuzz_keys.cpp)
+target_link_libraries(fuzz_keys PRIVATE vietime)
+add_test(NAME fuzz COMMAND fuzz_keys 1 20000)
+
 if(VIETIME_SANITIZE AND NOT MSVC AND NOT MINGW)
-  set_tests_properties(core api c_sentence PROPERTIES
+  set_tests_properties(core api c_sentence fuzz PROPERTIES
     ENVIRONMENT "ASAN_OPTIONS=detect_leaks=1:abort_on_error=1;UBSAN_OPTIONS=print_stacktrace=1:halt_on_error=1")
 endif()
 
-foreach(t ime_core vietime ime ime_tests api_tests type_sentence)
+set_tests_properties(fuzz PROPERTIES TIMEOUT 300)
+
+foreach(t ime_core vietime ime ime_tests api_tests type_sentence fuzz_keys)
   if(MSVC)
     target_compile_options(${t} PRIVATE /W4 /utf-8 $<$<CONFIG:Debug>:/WX>)
   else()
@@ -137,6 +143,11 @@ foreach(t ime_core vietime ime ime_tests api_tests type_sentence)
         "$<$<AND:$<CONFIG:Debug>,$<BOOL:${VIETIME_SANITIZE}>>:-fsanitize=address,undefined;-fno-sanitize-recover=all;-fno-omit-frame-pointer;-g>")
       target_link_options(${t} PRIVATE
         "$<$<AND:$<CONFIG:Debug>,$<BOOL:${VIETIME_SANITIZE}>>:-fsanitize=address,undefined>")
+    endif()
+
+    if(VIETIME_COVERAGE)
+      target_compile_options(${t} PRIVATE --coverage -O0 -g)
+      target_link_options(${t} PRIVATE --coverage)
     endif()
   endif()
 endforeach()
