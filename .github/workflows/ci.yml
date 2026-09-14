@@ -1,0 +1,216 @@
+# SPDX-FileCopyrightText: 2026 Cao Duc Anh <anhcd.151635@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+  schedule:
+    # 02:00 UTC = 09:00 giờ Việt Nam. Chỉ để chạy fuzz dài.
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # =================================================================
+  # 1. Suite thường, hai nền tảng. Job cho phản hồi nhanh nhất.
+  # =================================================================
+  test:
+    name: test (${{ matrix.name }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: linux-gcc
+            os: ubuntu-latest
+          - name: windows-ucrt64
+            os: windows-latest
+
+    defaults:
+      run:
+        shell: ${{ matrix.os == 'windows-latest' && 'msys2 {0}' || 'bash' }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cài MSYS2 (UCRT64)
+        if: matrix.os == 'windows-latest'
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: >-
+            mingw-w64-ucrt-x86_64-gcc
+            mingw-w64-ucrt-x86_64-cmake
+            mingw-w64-ucrt-x86_64-ninja
+
+      - name: Cài công cụ (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: sudo apt-get update && sudo apt-get install -y ninja-build
+
+      - name: Configure
+        run: |
+          cmake -S . -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DVIETIME_SANITIZE=OFF
+
+      - name: Build
+        run: cmake --build build
+
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
+
+  # =================================================================
+  # 2. ASan + UBSan + LSan.
+  # =================================================================
+  sanitize:
+    name: asan + ubsan + lsan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - run: sudo apt-get update && sudo apt-get install -y ninja-build
+
+      - name: Configure (sanitize)
+        run: |
+          cmake -S . -B build-san -G Ninja \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DVIETIME_SANITIZE=ON
+
+      - name: Build
+        run: cmake --build build-san
+
+      - name: Xác nhận instrumentation thật sự được bật
+        # Bước này làm job đỏ ngay thay vì báo một kết quả sạch giả.
+        run: |
+          n=$(grep -c 'fno-sanitize-recover' build-san/compile_commands.json || true)
+          echo "số file được instrument: $n"
+          test "$n" -ge 20
+
+      - name: Test dưới sanitizer
+        env:
+          ASAN_OPTIONS: detect_leaks=1:abort_on_error=1:detect_stack_use_after_return=1
+          UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
+          LSAN_OPTIONS: report_objects=1
+        run: ctest --test-dir build-san --output-on-failure
+
+  # =================================================================
+  # 3. valgrind memcheck.  Bắt được thứ ASan không bắt: đọc bộ nhớ
+  #    chưa khởi tạo - đúng lớp bug của struct VietimeKeyResult nhiều
+  #    trường mà một nhánh quên gán.
+  # =================================================================
+  valgrind:
+    name: valgrind memcheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - run: sudo apt-get update && sudo apt-get install -y ninja-build valgrind
+
+      - name: Configure (sạch sanitizer)
+        # valgrind và ASan đều thay allocator - chạy chung ra rác.
+        run: |
+          cmake -S . -B build-vg -G Ninja \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DVIETIME_SANITIZE=OFF
+
+      - name: Build
+        run: cmake --build build-vg
+
+      - name: memcheck
+        run: |
+          VG="valgrind --leak-check=full --show-leak-kinds=definite,indirect \
+              --track-origins=yes --error-exitcode=1 --errors-for-leak-kinds=definite,indirect"
+          $VG ./build-vg/ime_tests
+          $VG ./build-vg/api_tests
+          $VG ./build-vg/type_sentence
+          # fuzz chậm ~30x dưới valgrind, nên rút số lượt.
+          $VG ./build-vg/fuzz_keys 1 2000
+
+  # =================================================================
+  # 4. Coverage - ngưỡng 80% chỉ tính core/, không tính tests/.
+  # =================================================================
+  coverage:
+    name: coverage (core >= 80%)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build
+          pipx install gcovr
+
+      - name: Configure (coverage)
+        run: |
+          cmake -S . -B build-cov -G Ninja \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DVIETIME_SANITIZE=OFF \
+            -DVIETIME_COVERAGE=ON
+
+      - name: Build
+        run: cmake --build build-cov
+
+      - name: Test
+        run: ctest --test-dir build-cov --output-on-failure
+
+      - name: Báo cáo coverage
+        run: |
+          gcovr --root . \
+                --filter 'core/' \
+                --exclude '.*/tests/.*' \
+                --exclude 'core/main\.cpp' \
+                --exclude-unreachable-branches \
+                --print-summary \
+                --html-details coverage.html \
+                --fail-under-line 80
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: coverage*.html
+
+  # =================================================================
+  # 5. Fuzz dài - 1 triệu lượt, nhiều seed. KHÔNG chạy mỗi push.
+  # =================================================================
+  fuzz-long:
+    name: fuzz 1e6 (nightly)
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - run: sudo apt-get update && sudo apt-get install -y ninja-build
+
+      - name: Configure (sanitize)
+        run: |
+          cmake -S . -B build-fuzz -G Ninja \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DVIETIME_SANITIZE=ON
+
+      - name: Build
+        run: cmake --build build-fuzz
+
+      - name: 1 triệu keystroke, sanitizer bật
+        env:
+          ASAN_OPTIONS: detect_leaks=1:abort_on_error=1
+          UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
+        run: ./build-fuzz/fuzz_keys 1 1000000
+
+      - name: 20 seed ngẫu nhiên
+        env:
+          ASAN_OPTIONS: detect_leaks=1:abort_on_error=1
+          UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
+        run: |
+          for i in $(seq 1 20); do
+            s=$RANDOM$RANDOM
+            echo "--- seed $s ---"
+            ./build-fuzz/fuzz_keys "$s" 50000
+          done
