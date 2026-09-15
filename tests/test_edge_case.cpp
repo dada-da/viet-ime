@@ -288,14 +288,14 @@ namespace
     vietime_process_key(ctx, 'i');
 
     VietimeKeyResult r = vietime_process_key(ctx, 0xFF1B); // Escape
-    check_eq<std::size_t>(r.backspace_count, 0, "Escape: không bảo app xoá gì");
-    check_eq<std::size_t>(r.text_length, 0, "Escape: không gửi gì");
+    check_eq<std::size_t>(r.backspace_count, 2, "Escape: xoá 2 ký tự preedit trước khi commit");
+    check_eq<std::size_t>(r.text_length, 2, "Escape: commit 'ti'");
 
     // Preedit còn nguyên. Đây là hợp đồng, không phải bug: chỉ wrapper mới
     // biết Escape nghĩa là huỷ (reset) hay chỉ là phím lạ (flush).
     r = vietime_flush(ctx);
-    check_str(std::string(r.text, r.text_length), "ti",
-              "Escape: preedit còn nguyên, wrapper tự quyết");
+    check_str(std::string(r.text, r.text_length), "",
+              "Escape: preedit rỗng sau khi commit");
 
     vietime_destroy(ctx);
   }

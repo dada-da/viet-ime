@@ -13,10 +13,12 @@
 #include "check.h"
 
 void test_edge_cases();
+void test_api_contract();
 
 int main(void)
 {
   test_edge_cases();
+  test_api_contract();
 
   std::cout << "\n"
             << (g_failures == 0 ? "TAT CA PASS" : "CO LOI")

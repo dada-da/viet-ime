@@ -91,6 +91,7 @@ void run_char_count_tests()
   check_char_count("");
   check_char_count("a");
   check_char_count("tieengs");
+  check_char_count("tieengs ");
   check_char_count("NGUwOwIF");
   check_char_count("dduwowcj");
   check_char_count("hoaf");

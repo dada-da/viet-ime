@@ -110,6 +110,7 @@ add_executable(api_tests
   tests/check.cpp
   tests/api_test_main.cpp
   tests/test_edge_case.cpp
+  tests/test_api_contract.cpp
 )
 target_link_libraries(api_tests PRIVATE vietime)
 target_include_directories(api_tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/tests")

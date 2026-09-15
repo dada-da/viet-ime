@@ -27,6 +27,7 @@ void check_eq(const T &got, const T &want, const std::string &name)
     b << got;
     std::cout << "    want: " << a.str() << "\n"
               << "    got:  " << b.str() << "\n";
+    std::fflush(stdout);
   }
 }
 
