@@ -243,7 +243,7 @@ void test_api_contract()
   {
     Run run;
     run.key(' ');
-    check_result(run.last, 0, " ", 1, 1, "space rong");
+    check_result(run.last, 0, "", 0, 0, "space rong");
     check_models(run, " ", "space rong");
   }
 

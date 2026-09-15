@@ -25,6 +25,9 @@ namespace vietime
 
     if (is_word_boundary(key))
     {
+      if (empty())
+        return result;
+
       result.commit_text = commit() + c;
       result.has_commit = true;
       result.consumed = true;

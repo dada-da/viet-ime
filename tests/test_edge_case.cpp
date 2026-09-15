@@ -267,13 +267,14 @@ namespace
       check_result_sane(r, c.name);
     }
 
-    // Hai đầu dải phải nằm TRONG.
     vietime_reset(ctx);
+    vietime_process_key(ctx, 'a');
     r = vietime_process_key(ctx, 0x7E); // '~'
-    check_eq<int32_t>(r.key_consumed, 1, "0x7E '~': trong dải");
+    check_eq<int32_t>(r.key_consumed, 1, "0x7E '~': trong dải (có preedit)");
     vietime_reset(ctx);
+    vietime_process_key(ctx, 'a');
     r = vietime_process_key(ctx, 0x20); // dấu cách
-    check_eq<int32_t>(r.key_consumed, 1, "0x20 dấu cách: trong dải");
+    check_eq<int32_t>(r.key_consumed, 1, "0x20 dấu cách: trong dải (có preedit)");
 
     vietime_destroy(ctx);
   }

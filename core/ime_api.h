@@ -84,6 +84,8 @@ extern "C"
    *
    * Muốn một phím (ví dụ Escape) HUỶ chữ đang gõ thay vì commit: gọi
    * vietime_reset TRƯỚC, rồi mới đưa phím đó vào vietime_process_key.
+   *
+   * Phím ranh giới từ (dấu cách, dấu câu) khi preedit rỗng cũng chỉ nhường phím; khi có preedit thì libvietime nhận phím và text = preedit + phím đó.
    */
   typedef struct
   {
