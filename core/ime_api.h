@@ -35,6 +35,10 @@ extern "C"
  * ứng dụng không qua bộ biến đổi, nên "aa" nằm hai bên ranh giới đó
  * không hợp thành "â".
  *
+ * Phím nằm ngoài 0x20..0x7E (Enter, Tab, Escape, chữ không phải ASCII)
+ * đi cùng đường đó: có preedit thì commit rồi nhường phím; preedit rỗng
+ * thì chỉ nhường phím (mọi trường bằng 0, key_consumed = 0).
+ *
  * Hệ số 3 trong static_assert ở ime_api.cpp là số byte UTF-8 tối đa của
  * một ký tự tiếng Việt NFC (ví dụ 'ệ' U+1EC7). */
 #define VIETIME_MAX_CODE_POINT 32
@@ -68,14 +72,18 @@ extern "C"
    *   2. chèn `text_length` byte đầu của `text`
    *   3. nếu `key_consumed == 0`: trả phím thô về cho ứng dụng tự xử lý
    *
-   * Bước 2 và bước 3 CÙNG XẢY RA khi preedit chạm trần
-   * VIETIME_MAX_CODE_POINT: libvietime commit phần đang gõ dở rồi nhường
+   * Bước 2 và bước 3 CÙNG XẢY RA trong hai trường hợp, khi preedit
+   * không rỗng: preedit chạm trần VIETIME_MAX_CODE_POINT, hoặc phím nằm
+   * ngoài 0x20..0x7E. libvietime commit phần đang gõ dở rồi nhường
    * phím đó lại. Làm bước 3 trước bước 2 sẽ cho chuỗi đảo thứ tự, và
    * không có mã lỗi nào báo — gõ 32 chữ rồi 'x' sẽ ra "x" đứng trước 32
    * chữ đó.
    *
-   * Vì vậy ĐỪNG viết `if (!key_consumed) return;` — nhánh đó bỏ mất
+   * ĐỪNG viết `if (!key_consumed) return;` — nhánh đó bỏ mất
    * `text` đi kèm.
+   *
+   * Muốn một phím (ví dụ Escape) HUỶ chữ đang gõ thay vì commit: gọi
+   * vietime_reset TRƯỚC, rồi mới đưa phím đó vào vietime_process_key.
    */
   typedef struct
   {
@@ -106,6 +114,12 @@ extern "C"
      *                commit_text (text_committed = 1).
      *   SendInput  — PHẢI dùng. Preedit cũ đang nằm thật trong tài liệu và
      *                không ai xoá hộ.
+     *
+     * DẠNG ĐẦY ĐỦ: backspace_count luôn bằng TOÀN BỘ số codepoint
+     * libvietime đang có trước con trỏ, và `text` luôn là chuỗi ĐẦY ĐỦ
+     * (preedit mới, hoặc chuỗi commit). libvietime không bao giờ trả phần
+     * chênh lệch. Wrapper SendInput muốn gửi ít phím hơn thì tự so chuỗi
+     * cũ với `text` và chỉ gửi phần đuôi khác nhau.
      *
      * Trường này không bao giờ đếm sang chữ có sẵn của ứng dụng.
      */

@@ -57,25 +57,22 @@ extern "C" VietimeKeyResult vietime_process_key(vietime_ctx *ctx, uint32_t c)
       return key_result;
     }
 
-    if (c < 0x20 || c > 0x7E)
-    {
-      key_result.key_consumed = false;
-
-      return key_result;
-    }
-
-    if (ctx->kp.char_count() >= VIETIME_MAX_CODE_POINT)
-    {
-      std::string text_result = ctx->kp.commit();
-      size_t length = vietime::copy_text(key_result.text, text_result);
-      key_result.text_length = length;
-      key_result.key_consumed = false;
-      key_result.text_committed = true;
-
-      return key_result;
-    }
-
     key_result.backspace_count = ctx->kp.char_count();
+
+    if (c < 0x20 || c > 0x7E || ctx->kp.char_count() >= VIETIME_MAX_CODE_POINT)
+    {
+      if (!ctx->kp.empty())
+      {
+        std::string text_result = ctx->kp.commit();
+        size_t length = vietime::copy_text(key_result.text, text_result);
+        key_result.text_length = length;
+        key_result.text_committed = true;
+      }
+
+      key_result.key_consumed = false;
+
+      return key_result;
+    }
 
     vietime::KeyResult result = ctx->kp.handle_key(c);
 
@@ -91,7 +88,6 @@ extern "C" VietimeKeyResult vietime_process_key(vietime_ctx *ctx, uint32_t c)
     if (result.has_commit)
     {
       key_result.text_committed = true;
-      key_result.backspace_count = 0;
 
       size_t length = vietime::copy_text(key_result.text, result.commit_text);
 
@@ -259,6 +255,7 @@ extern "C" VietimeKeyResult vietime_flush(vietime_ctx *ctx)
       return key_result;
     }
 
+    key_result.backspace_count = ctx->kp.char_count();
     std::string result = ctx->kp.commit(); // commit() đã tự dọn buffer
     key_result.text_committed = true;
     size_t length = vietime::copy_text(key_result.text, result);
