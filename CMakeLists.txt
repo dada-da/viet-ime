@@ -111,6 +111,7 @@ add_executable(api_tests
   tests/api_test_main.cpp
   tests/test_edge_case.cpp
   tests/test_api_contract.cpp
+  tests/test_repeat_vowel.cpp
 )
 target_link_libraries(api_tests PRIVATE vietime)
 target_include_directories(api_tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/tests")
@@ -131,7 +132,38 @@ endif()
 
 set_tests_properties(fuzz PROPERTIES TIMEOUT 300)
 
-foreach(t ime_core vietime ime ime_tests api_tests type_sentence fuzz_keys)
+if(WIN32)
+  add_executable(vietime_hook
+    platform/windows-hook/bridge.cpp
+    platform/windows-hook/vk_to_cp.cpp
+    platform/windows-hook/diff_apply.cpp
+  )
+  target_link_libraries(vietime_hook PRIVATE vietime user32)
+  target_include_directories(vietime_hook PRIVATE
+    "${CMAKE_CURRENT_SOURCE_DIR}/core")
+
+  add_executable(test_decode
+    tests/check.cpp
+    platform/windows-hook/test_windows_hook_main.cpp
+    platform/windows-hook/test_decode.cpp
+    platform/windows-hook/vk_to_cp.cpp
+  )
+  target_link_libraries(test_decode PRIVATE user32)
+  target_include_directories(test_decode PRIVATE
+    "${CMAKE_CURRENT_SOURCE_DIR}/platform/windows-hook"
+    "${CMAKE_CURRENT_SOURCE_DIR}/tests")
+  add_test(NAME decode COMMAND test_decode)
+endif()
+
+add_executable(type_keys tests/type_keys.cpp)
+target_link_libraries(type_keys PRIVATE vietime)
+
+set(vietime_targets
+  ime_core vietime ime ime_tests api_tests type_sentence fuzz_keys type_keys)
+if(WIN32)
+  list(APPEND vietime_targets vietime_hook test_decode)
+endif()
+foreach(t ${vietime_targets})
   if(MSVC)
     target_compile_options(${t} PRIVATE /W4 /utf-8 $<$<CONFIG:Debug>:/WX>)
   else()

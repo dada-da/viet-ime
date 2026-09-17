@@ -6,56 +6,66 @@
 
 #include <cstdio>
 #include <string>
+#include <vector>
 
 #include "ime_api.h"
 #include "vk_to_cp.h"
-
+#include "diff_apply.h"
 namespace
 {
   HWND g_last_window = nullptr;
   HHOOK g_hook = nullptr;
   DWORD g_main_thread = 0;
   vietime_ctx *g_ctx = nullptr;
+  std::string g_shown;
 
   constexpr ULONG_PTR kOurTag = 0x5669'6574; // "Viet"
 
-  void send_backspaces(size_t n)
+  void send_diff(const vietime_hook::Diff &d)
   {
-    for (size_t i = 0; i < n; i++)
+    // UTF-8 tail -> UTF-16
+    std::wstring w;
+    if (!d.tail.empty())
     {
-      INPUT in[2] = {};
-      in[0].type = INPUT_KEYBOARD;
-      in[0].ki.wVk = VK_BACK;
-      in[0].ki.dwExtraInfo = kOurTag;
-      in[1] = in[0];
-      in[1].ki.dwFlags = KEYEVENTF_KEYUP;
-      SendInput(2, in, sizeof(INPUT));
+      int wlen = MultiByteToWideChar(CP_UTF8, 0, d.tail.data(),
+                                     static_cast<int>(d.tail.size()), nullptr, 0);
+      if (wlen > 0)
+      {
+        w.resize(static_cast<size_t>(wlen));
+        MultiByteToWideChar(CP_UTF8, 0, d.tail.data(),
+                            static_cast<int>(d.tail.size()), w.data(), wlen);
+      }
     }
-  }
 
-  void send_text_utf8(const char *text, size_t len)
-  {
-    // UTF-8 -> UTF-16
-    int wlen = MultiByteToWideChar(CP_UTF8, 0, text, static_cast<int>(len),
-                                   nullptr, 0);
-    if (wlen <= 0)
-      return;
+    std::vector<INPUT> in;
+    in.reserve((d.backspaces + w.size()) * 2);
 
-    std::wstring w(static_cast<size_t>(wlen), L'\0');
-    MultiByteToWideChar(CP_UTF8, 0, text, static_cast<int>(len),
-                        w.data(), wlen);
-
+    for (size_t i = 0; i < d.backspaces; i++)
+    {
+      INPUT dn = {};
+      dn.type = INPUT_KEYBOARD;
+      dn.ki.wVk = VK_BACK;
+      dn.ki.dwExtraInfo = kOurTag;
+      INPUT up = dn;
+      up.ki.dwFlags = KEYEVENTF_KEYUP;
+      in.push_back(dn);
+      in.push_back(up);
+    }
     for (wchar_t wc : w)
     {
-      INPUT in[2] = {};
-      in[0].type = INPUT_KEYBOARD;
-      in[0].ki.wScan = wc;
-      in[0].ki.dwFlags = KEYEVENTF_UNICODE;
-      in[0].ki.dwExtraInfo = kOurTag;
-      in[1] = in[0];
-      in[1].ki.dwFlags = KEYEVENTF_UNICODE | KEYEVENTF_KEYUP;
-      SendInput(2, in, sizeof(INPUT));
+      INPUT dn = {};
+      dn.type = INPUT_KEYBOARD;
+      dn.ki.wScan = wc;
+      dn.ki.dwFlags = KEYEVENTF_UNICODE;
+      dn.ki.dwExtraInfo = kOurTag;
+      INPUT up = dn;
+      up.ki.dwFlags = KEYEVENTF_UNICODE | KEYEVENTF_KEYUP;
+      in.push_back(dn);
+      in.push_back(up);
     }
+
+    if (!in.empty())
+      SendInput(static_cast<UINT>(in.size()), in.data(), sizeof(INPUT));
   }
 
   void apply_result(const VietimeKeyResult &r)
@@ -63,9 +73,19 @@ namespace
     if (r.error != VIETIME_OK)
       return;
 
-    send_backspaces(r.backspace_count);
-    if (r.text_length > 0)
-      send_text_utf8(r.text, r.text_length);
+    if (r.text_committed)
+    {
+      vietime_hook::Diff d =
+          vietime_hook::shortest_diff(g_shown, std::string(r.text, r.text_length));
+      send_diff(d);
+      g_shown.clear();
+      return;
+    }
+
+    std::string next(r.text, r.text_length);
+    vietime_hook::Diff d = vietime_hook::shortest_diff(g_shown, next);
+    send_diff(d);
+    g_shown = next;
   }
 
   bool is_modifier_down(int vk)

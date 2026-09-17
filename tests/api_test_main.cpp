@@ -14,11 +14,13 @@
 
 void test_edge_cases();
 void test_api_contract();
+void test_repeat_vowel();
 
 int main(void)
 {
   test_edge_cases();
   test_api_contract();
+  test_repeat_vowel();
 
   std::cout << "\n"
             << (g_failures == 0 ? "TAT CA PASS" : "CO LOI")
