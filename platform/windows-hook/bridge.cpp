@@ -12,6 +12,7 @@
 
 namespace
 {
+  HWND g_last_window = nullptr;
   HHOOK g_hook = nullptr;
   DWORD g_main_thread = 0;
   vietime_ctx *g_ctx = nullptr;
@@ -81,6 +82,14 @@ namespace
 
     if (k->dwExtraInfo == kOurTag)
       return CallNextHookEx(nullptr, code, wparam, lparam);
+
+    HWND now = GetForegroundWindow();
+
+    if (now != g_last_window)
+    {
+      (void)vietime_reset(g_ctx);
+      g_last_window = now;
+    }
 
     const bool down = wparam == WM_KEYDOWN || wparam == WM_SYSKEYDOWN;
     if (!down)
