@@ -162,19 +162,16 @@ namespace vietime
       }
     }
 
-    for (std::size_t i = v.size(); i > 0; i--)
+    const char32_t c = v.back();
+
+    if (rule.must_equal == 0 || c == rule.must_equal)
     {
-      const char32_t c = v[i - 1];
-
-      if (rule.must_equal != 0 && c != rule.must_equal)
-        continue;
-
       if (char32_t r = rule.map(c); r != 0)
       {
-        base[p.nucleus_start + i - 1] = r;
+        base[p.nucleus_start + v.size() - 1] = r;
         mod_result.applied = true;
         mod_result.old_chars[0] = c;
-        mod_result.pos = p.nucleus_start + i - 1;
+        mod_result.pos = p.nucleus_start + v.size() - 1;
         mod_result.count = 1;
 
         return mod_result;
