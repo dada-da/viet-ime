@@ -32,6 +32,45 @@ namespace vietime_hook
     }
   }
 
+  std::string utf8_suffix(const std::string &s, unsigned backspace_count, unsigned *taken)
+  {
+    size_t i = s.size();
+    unsigned got = 0;
+    while (got < backspace_count && i > 0)
+    {
+      --i;
+      while (i > 0 && ((static_cast<unsigned char>(s[i]) & 0xC0) == 0x80))
+        --i;
+
+      ++got;
+    }
+
+    if (taken)
+      *taken = got;
+
+    return s.substr(i);
+  }
+
+  Step plan_step(const std::string &shown, unsigned backspace_count, const std::string &text)
+  {
+    Step st;
+    unsigned taken = 0;
+    std::string old = utf8_suffix(shown, backspace_count, &taken);
+    st.desync = (taken != backspace_count);
+    if (st.desync)
+    {
+      st.diff.backspaces = backspace_count;
+      st.diff.insert = text;
+    }
+    else
+    {
+      st.diff = shortest_diff(old, text);
+    }
+    st.shown = text;
+
+    return st;
+  }
+
   std::size_t common_prefix_chars(std::string_view a, std::string_view b)
   {
     std::size_t i = 0, cp = 0;
@@ -72,7 +111,7 @@ namespace vietime_hook
     d.backspaces = cp_count(old_shown) - common;
 
     std::size_t tail_start = byte_at_cp(new_full, common);
-    d.tail = std::string(new_full.substr(tail_start));
+    d.insert = std::string(new_full.substr(tail_start));
     return d;
   }
 }

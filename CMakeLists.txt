@@ -112,9 +112,13 @@ add_executable(api_tests
   tests/test_edge_case.cpp
   tests/test_api_contract.cpp
   tests/test_repeat_vowel.cpp
+  platform/windows-hook/diff_apply.cpp
+  tests/test_hook_apply.cpp
 )
 target_link_libraries(api_tests PRIVATE vietime)
-target_include_directories(api_tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/tests")
+target_include_directories(api_tests PRIVATE
+  "${CMAKE_CURRENT_SOURCE_DIR}/tests"
+  "${CMAKE_CURRENT_SOURCE_DIR}/platform/windows-hook")
 add_test(NAME api COMMAND api_tests)
 
 add_executable(type_sentence tests/type_sentence.c)

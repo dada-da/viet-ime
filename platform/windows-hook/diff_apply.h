@@ -18,8 +18,19 @@ namespace vietime_hook
   struct Diff
   {
     std::size_t backspaces = 0;
-    std::string tail; // UTF-8, phần đuôi cần gõ thêm
+    std::string insert; // UTF-8, phần gõ thêm
   };
+
+  struct Step
+  {
+    Diff diff;
+    std::string shown;
+    bool desync;
+  };
+
+  std::string utf8_suffix(const std::string &s, unsigned backspace_count, unsigned *taken);
+
+  Step plan_step(const std::string &shown, unsigned backspace_count, const std::string &text);
 
   // So chuỗi wrapper ĐANG hiển thị (old_shown) với chuỗi core muốn có
   // (new_full), trả về thao tác ngắn nhất. Cả hai UTF-8.

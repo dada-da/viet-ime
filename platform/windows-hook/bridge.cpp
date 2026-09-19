@@ -25,15 +25,15 @@ namespace
   {
     // UTF-8 tail -> UTF-16
     std::wstring w;
-    if (!d.tail.empty())
+    if (!d.insert.empty())
     {
-      int wlen = MultiByteToWideChar(CP_UTF8, 0, d.tail.data(),
-                                     static_cast<int>(d.tail.size()), nullptr, 0);
+      int wlen = MultiByteToWideChar(CP_UTF8, 0, d.insert.data(),
+                                     static_cast<int>(d.insert.size()), nullptr, 0);
       if (wlen > 0)
       {
         w.resize(static_cast<size_t>(wlen));
-        MultiByteToWideChar(CP_UTF8, 0, d.tail.data(),
-                            static_cast<int>(d.tail.size()), w.data(), wlen);
+        MultiByteToWideChar(CP_UTF8, 0, d.insert.data(),
+                            static_cast<int>(d.insert.size()), w.data(), wlen);
       }
     }
 
@@ -73,19 +73,17 @@ namespace
     if (r.error != VIETIME_OK)
       return;
 
-    if (r.text_committed)
+    const std::string text(r.text, r.text_length);
+
+    vietime_hook::Step st = vietime_hook::plan_step(g_shown, r.backspace_count, text);
+
+    if (st.desync)
     {
-      vietime_hook::Diff d =
-          vietime_hook::shortest_diff(g_shown, std::string(r.text, r.text_length));
-      send_diff(d);
-      g_shown.clear();
-      return;
+      printf("g_shown lech");
     }
 
-    std::string next(r.text, r.text_length);
-    vietime_hook::Diff d = vietime_hook::shortest_diff(g_shown, next);
-    send_diff(d);
-    g_shown = next;
+    send_diff(st.diff);
+    g_shown = st.shown;
   }
 
   bool is_modifier_down(int vk)
