@@ -67,7 +67,7 @@ void run_syllable_tests()
   check_parts(U"nghiêng", U"ngh", U"iê", U"ng"); // 'h' sat nguyen am, khong phai 'g'
   check_parts(U"gi", U"g", U"i", U"");           // khong cat: am chinh se rong
   check_parts(U"ăn", U"", U"ă", U"n");           // khong co am dau -> chot i > 0
-  check_parts(U"qu", U"qu", U"", U"");
+  check_parts(U"qu", U"qu", U"", U"");           // voi qu se khong co nguyen am
   check_parts(U"ng", U"ng", U"", U"");
   check_parts(U"", U"", U"", U"");
   check_parts(U"quf", U"qu", U"", U"f");

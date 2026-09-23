@@ -41,7 +41,7 @@ namespace vietime
     if (i > 0)
     {
       char32_t initial_last = s[i - 1];
-      if ((initial_last == U'q' && s[i] == U'u') || ((initial_last == U'g' && s[i] == U'i') && v - i >= 2))
+      if ((initial_last == U'q' && s[i] == U'u') || ((initial_last == U'g' && s[i] == U'i') && v - i >= 2)) // voi qu se bo qua do q + u khong hop ly -> nucleus empty con voi gi thi i van la nguyen am hop le -> nucleus = i
         ++i;
     }
 

@@ -34,6 +34,8 @@ static void telex_rules_in_context()
   check_telex("quj", "quj");
   check_telex("quyf", "quỳ");
   check_telex("gif", "gì");
+  check_telex("quanwww", "quanww");
+  check_telex("quanwwsw", "quanwsư");
 }
 
 static void telex_five_tones()
