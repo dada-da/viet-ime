@@ -50,6 +50,7 @@ add_library(ime_core STATIC
   core/transform_engine.cpp
   core/case_map.cpp
   core/api_util.cpp
+  core/rime_table.cpp
 )
 target_include_directories(ime_core PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/core")
 
@@ -101,6 +102,7 @@ add_executable(ime_tests
   tests/test_undo.cpp
   tests/test_api_util.cpp
   tests/test_unicode.cpp
+  tests/test_rime_table.cpp
 )
 target_link_libraries(ime_tests PRIVATE ime_core)
 target_include_directories(ime_tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/tests")

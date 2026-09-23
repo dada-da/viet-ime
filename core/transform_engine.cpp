@@ -5,6 +5,7 @@
 
 #include "transform_engine.h"
 #include "syllable.h"
+#include "rime_table.h"
 
 namespace vietime
 {
@@ -201,6 +202,14 @@ namespace vietime
 
       if (char32_t r = rule.map(c); r != 0)
       {
+        const std::size_t nucleus_index = i - 1;
+
+        std::u32string probe(v);
+        probe[nucleus_index] = r;
+
+        if (!is_vowel_cluster_prefix(probe))
+          continue;
+
         base[p.nucleus_start + i - 1] = r;
         mod_result.applied = true;
         mod_result.old_chars[0] = c;

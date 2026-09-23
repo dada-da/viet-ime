@@ -17,6 +17,7 @@ void test_undo();
 void test_api_util();
 void run_char_count_tests();
 void run_unicode_tests();
+void test_rime_table();
 
 int main(void)
 {
@@ -33,6 +34,7 @@ int main(void)
   test_api_util();
   run_char_count_tests();
   run_unicode_tests();
+  test_rime_table();
 
   std::cout << "\n"
             << (g_failures == 0 ? "TAT CA PASS" : "CO LOI")

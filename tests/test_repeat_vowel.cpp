@@ -47,18 +47,18 @@ void test_repeat_vowel()
   ck("ee", "\u00EA"); // ê
   ck("eee", "ee");
 
-  // ---- Ca bug: lặp dài, dấu áp cho chữ GẦN NHẤT ----
-  ck("aaaa", "a\u00E2");    // aâ
-  ck("eeee", "e\u00EA");    // eê
-  ck("aaaaa", "aaa");       // aa -> gõ a nữa -> hoàn tác -> aa   ← BUG: đang ra "ââ"
-  ck("eeeee", "eee");       // tương tự                          ← BUG: đang ra "êê"?
-  ck("aaaaaa", "aa\u00E2"); // aaâ                               ← BUG: đang ra "âaa"
-  ck("eeeeee", "ee\u00EA"); // eeê                               ← BUG: đang ra "êee"
+  // ---- Ca bug: lặp dài ----
+  ck("aaaa", "aaa");
+  ck("eeee", "eee");
+  ck("aaaaa", "aaaa");
+  ck("eeeee", "eeee");
+  ck("aaaaaa", "aaaaa");
+  ck("eeeeee", "eeeee");
 
   // ---- Ca trộn, ĐÃ đúng (không được vỡ khi sửa) ----
-  ck("aeae", "âê");           // aeae
-  ck("aaee", "\u00E2\u00EA"); // âê
-  ck("eeoo", "\u00EA\u00F4"); // êô
+  ck("aeae", "aeae");     // aeae
+  ck("aaee", "\u00E2ee"); // âee
+  ck("eeoo", "\u00EAoo"); // êoo
 
   // ---- oaw: ĐIỀN SAU KHI CHẠY type_keys oaw ----
   ck("oaw", "o\u0103");

@@ -38,10 +38,10 @@ namespace vietime
     while (v < s.size() && is_vowel(s[v]))
       ++v;
 
-    if (i > 0 && v - i >= 2)
+    if (i > 0)
     {
       char32_t initial_last = s[i - 1];
-      if ((initial_last == U'q' && s[i] == U'u') || (initial_last == U'g' && s[i] == U'i'))
+      if ((initial_last == U'q' && s[i] == U'u') || ((initial_last == U'g' && s[i] == U'i') && v - i >= 2))
         ++i;
     }
 
