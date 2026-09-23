@@ -56,7 +56,7 @@ void test_repeat_vowel()
   ck("eeeeee", "ee\u00EA"); // eeê                               ← BUG: đang ra "êee"
 
   // ---- Ca trộn, ĐÃ đúng (không được vỡ khi sửa) ----
-  ck("aeae", "aeae");         // âê
+  ck("aeae", "âê");           // aeae
   ck("aaee", "\u00E2\u00EA"); // âê
   ck("eeoo", "\u00EA\u00F4"); // êô
 

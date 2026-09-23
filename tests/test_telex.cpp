@@ -29,6 +29,7 @@ static void telex_rules_in_context()
   check_telex("hocj", "học");
   check_telex("gif", "gì");
   check_telex("thuyr", "thuỷ");
+  check_telex("bieuer", "biểu");
 }
 
 static void telex_five_tones()

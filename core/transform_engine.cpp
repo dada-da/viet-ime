@@ -1,6 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Cao Duc Anh <anhcd.151635@gmail.com>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#include <map>
+
 #include "transform_engine.h"
 #include "syllable.h"
 
@@ -103,6 +105,34 @@ namespace vietime
         return false;
       }
     }
+
+    const std::map<char32_t, char32_t> kTransformTable = {
+        {U'ă', U'a'},
+        {U'â', U'a'},
+        {U'ê', U'e'},
+        {U'ô', U'o'},
+        {U'ơ', U'o'},
+        {U'ư', U'u'},
+    };
+
+    bool is_transform(char32_t c)
+    {
+      auto candidate_key = kTransformTable.find(c);
+
+      return candidate_key != kTransformTable.end();
+    }
+
+    bool is_candidate(const char32_t base_char, const ModRule &rule)
+    {
+      char32_t result = rule.map(base_char);
+
+      if (result != 0 && (rule.must_equal == 0 || rule.must_equal == base_char))
+      {
+        return true;
+      }
+
+      return false;
+    }
   } // namespace
 
   ModResult apply_modifier(std::u32string &base, char key, InputMethod method)
@@ -119,9 +149,7 @@ namespace vietime
     if (rule.map == nullptr)
     {
       if (base.back() != U'd')
-      {
         return mod_result;
-      }
 
       mod_result.applied = true;
       mod_result.old_chars[0] = base.back();
@@ -137,9 +165,7 @@ namespace vietime
     const std::u32string &v = p.nucleus;
 
     if (v.empty())
-    {
       return mod_result;
-    }
 
     if (rule.pair_uo)
     {
@@ -154,7 +180,6 @@ namespace vietime
           mod_result.old_chars[0] = v[i];
           mod_result.old_chars[1] = v[i + 1];
           mod_result.count = 2;
-
           mod_result.pos = p.nucleus_start + i;
 
           return mod_result;
@@ -162,16 +187,24 @@ namespace vietime
       }
     }
 
-    const char32_t c = v.back();
-
-    if (rule.must_equal == 0 || c == rule.must_equal)
+    for (std::size_t i = v.size(); i > 0; i--)
     {
+      const char32_t c = v[i - 1];
+
+      if (is_transform(c))
+      {
+        return mod_result;
+      }
+
+      if (!is_candidate(c, rule))
+        continue;
+
       if (char32_t r = rule.map(c); r != 0)
       {
-        base[p.nucleus_start + v.size() - 1] = r;
+        base[p.nucleus_start + i - 1] = r;
         mod_result.applied = true;
         mod_result.old_chars[0] = c;
-        mod_result.pos = p.nucleus_start + v.size() - 1;
+        mod_result.pos = p.nucleus_start + i - 1;
         mod_result.count = 1;
 
         return mod_result;
@@ -184,9 +217,7 @@ namespace vietime
   bool is_tone_removal_key(char key, InputMethod method)
   {
     if (method == METHOD_VNI)
-    {
       return key == '0';
-    }
 
     return key == 'z';
   }
