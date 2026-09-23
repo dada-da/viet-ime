@@ -70,6 +70,8 @@ void run_syllable_tests()
   check_parts(U"qu", U"qu", U"", U"");
   check_parts(U"ng", U"ng", U"", U"");
   check_parts(U"", U"", U"", U"");
+  check_parts(U"quf", U"qu", U"", U"f");
+  check_parts(U"quj", U"qu", U"", U"j");
 
   // --- luat 1: o-horn ---
   check_pos(U"ngươi", 3, "R1", PLACEMENT_CLASSIC);

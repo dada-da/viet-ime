@@ -53,24 +53,28 @@ namespace vietime
       return result;
     }
 
-    std::size_t last_affect_key_pos = history_.size();
+    std::size_t first_affect_key_pos = history_.size();
 
-    for (std::size_t i = 0; i < last_affect_key_pos; i++)
+    for (std::size_t i = 0; i < first_affect_key_pos; i++)
     {
       if (history_[i].key == key)
       {
-        last_affect_key_pos = i;
+        first_affect_key_pos = i;
         break;
       }
     }
 
-    if (last_affect_key_pos != history_.size())
+    if (first_affect_key_pos != history_.size())
     {
       if (base_.size() >= max_len_)
-        return result;
+      {
+        result.consumed = true;
 
-      const Transform t = history_[last_affect_key_pos];
-      history_.erase(history_.begin() + static_cast<std::ptrdiff_t>(last_affect_key_pos));
+        return result;
+      }
+
+      const Transform t = history_[first_affect_key_pos];
+      history_.erase(history_.begin() + static_cast<std::ptrdiff_t>(first_affect_key_pos));
 
       if (t.was_tone)
       {

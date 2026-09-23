@@ -108,7 +108,13 @@ namespace vietime
 
   bool has_vowel(const std::u32string &s)
   {
-    for (char32_t c : s)
+    const SyllableParts p = split_syllable(s);
+    const std::u32string &v = p.nucleus;
+
+    if (v.empty())
+      return false;
+
+    for (char32_t c : v)
     {
       if (is_vowel(c))
       {

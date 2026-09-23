@@ -30,6 +30,10 @@ static void telex_rules_in_context()
   check_telex("gif", "gì");
   check_telex("thuyr", "thuỷ");
   check_telex("bieuer", "biểu");
+  check_telex("quf", "quf");
+  check_telex("quj", "quj");
+  check_telex("quyf", "quỳ");
+  check_telex("gif", "gì");
 }
 
 static void telex_five_tones()
