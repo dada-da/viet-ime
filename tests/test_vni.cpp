@@ -89,6 +89,8 @@ static void vni_real_words()
   check_vni("duo7ng2", "dường");
   check_vni("hoc5", "học");
   check_vni("nam2024", "nãm");
+  check_vni("a888", "a88");
+  check_vni("o776", "o76");
 }
 
 static void vni_tone_placement()

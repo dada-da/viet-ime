@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <string>
 #include <vector>
+#include <optional>
 #include "tone_table.h"
 #include "input_method.h"
 #include "syllable.h"
@@ -56,6 +57,7 @@ namespace vietime
     std::vector<int> upper_;
     Tone tone_ = TONE_NONE;
     bool tone_blocked_ = false;
+    std::optional<std::size_t> block_modified_pos_;
     size_t max_len_ = kDefaultMaxLen;
     InputMethod method_ = METHOD_TELEX;
     TonePlacement tone_placement_ = PLACEMENT_CLASSIC;

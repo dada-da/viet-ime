@@ -35,7 +35,12 @@ static void telex_rules_in_context()
   check_telex("quyf", "quỳ");
   check_telex("gif", "gì");
   check_telex("quanwww", "quanww");
-  check_telex("quanwwsw", "quanwsư");
+  check_telex("quanwwsw", "quánww");
+  check_telex("awww", "aww");
+  check_telex("dddd", "ddd");
+  // check_telex("huowww", "huow"); TODO
+  // check_telex("huow", "huơ");
+  // check_telex("tuwoww", "tuow");
 }
 
 static void telex_five_tones()

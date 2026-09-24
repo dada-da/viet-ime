@@ -84,6 +84,9 @@ void run_pipeline_tests()
   check_typing("tienges vieejt.", "tiếng việt.");
   check_typing("caf phee", "cà phê");
   check_typing("tienges~", "tiến");
+  check_typing("hojc~w", "hợ");
+  check_typing("quanww~w", "quăn");
+  check_typing("quanwwb~w", "quanww");
 }
 
 void run_char_count_tests()

@@ -38,10 +38,18 @@ namespace vietime
     while (v < s.size() && is_vowel(s[v]))
       ++v;
 
-    if (i > 0)
+    if (i > 0 && i < s.size())
     {
       char32_t initial_last = s[i - 1];
-      if ((initial_last == U'q' && s[i] == U'u') || ((initial_last == U'g' && s[i] == U'i') && v - i >= 2)) // voi qu se bo qua do q + u khong hop ly -> nucleus empty con voi gi thi i van la nguyen am hop le -> nucleus = i
+      bool is_qu_or_gi = false;
+
+      if (initial_last == U'q' && s[i] == U'u') // voi qu se bo qua do q + u khong hop ly -> nucleus empty
+        is_qu_or_gi = true;
+
+      if ((initial_last == U'g' && s[i] == U'i') && v - i >= 2) // voi gi thi i van la nguyen am hop le -> nucleus = i
+        is_qu_or_gi = true;
+
+      if (is_qu_or_gi)
         ++i;
     }
 

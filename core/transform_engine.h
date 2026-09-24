@@ -20,6 +20,7 @@ namespace vietime
   ModResult apply_modifier(std::u32string &base, char key, InputMethod method);
   bool is_tone_removal_key(char key, InputMethod method);
   bool is_word_boundary(char c);
+  bool is_modifier_block_key(char key, InputMethod method);
 }
 
 #endif

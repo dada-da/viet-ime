@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <map>
+#include <optional>
 
 #include "transform_engine.h"
 #include "syllable.h"
@@ -200,20 +201,20 @@ namespace vietime
       if (!is_candidate(c, rule))
         continue;
 
+      const std::size_t nucleus_index = i - 1;
+
       if (char32_t r = rule.map(c); r != 0)
       {
-        const std::size_t nucleus_index = i - 1;
-
         std::u32string probe(v);
         probe[nucleus_index] = r;
 
         if (!is_vowel_cluster_prefix(probe))
           continue;
 
-        base[p.nucleus_start + i - 1] = r;
+        base[p.nucleus_start + nucleus_index] = r;
         mod_result.applied = true;
         mod_result.old_chars[0] = c;
-        mod_result.pos = p.nucleus_start + i - 1;
+        mod_result.pos = p.nucleus_start + nucleus_index;
         mod_result.count = 1;
 
         return mod_result;
@@ -229,6 +230,16 @@ namespace vietime
       return key == '0';
 
     return key == 'z';
+  }
+
+  bool is_modifier_block_key(char key, InputMethod method)
+  {
+    if (method == METHOD_TELEX)
+    {
+      return key == 'w' || key == 'd';
+    }
+
+    return key == '6' || key == '7' || key == '8' || key == '9';
   }
 
   bool is_word_boundary(char key)
