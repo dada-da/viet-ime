@@ -150,15 +150,15 @@ namespace vietime
 
     if (rule.map == nullptr)
     {
-      if (base.back() != U'd')
+      if (base.front() != U'd')
         return mod_result;
 
       mod_result.applied = true;
-      mod_result.old_chars[0] = base.back();
-      mod_result.pos = base.size() - 1;
+      mod_result.old_chars[0] = base.front();
+      mod_result.pos = 0;
       mod_result.count = 1;
 
-      base.back() = U'đ';
+      base.front() = U'đ';
 
       return mod_result;
     }

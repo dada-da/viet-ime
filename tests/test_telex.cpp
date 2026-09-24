@@ -41,6 +41,8 @@ static void telex_rules_in_context()
   // check_telex("huowww", "huow"); TODO
   // check_telex("huow", "huơ");
   // check_telex("tuwoww", "tuow");
+  check_telex("did", "đi");
+  check_telex("duowcdj", "được");
 }
 
 static void telex_five_tones()
