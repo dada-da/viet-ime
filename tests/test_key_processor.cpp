@@ -84,9 +84,20 @@ void run_pipeline_tests()
   check_typing("tienges vieejt.", "tiếng việt.");
   check_typing("caf phee", "cà phê");
   check_typing("tienges~", "tiến");
-  check_typing("hojc~w", "hợ");
+  check_typing("hojc~w", "hợ"); // Test kiểm tra phần bridge
   check_typing("quanww~w", "quăn");
   check_typing("quanwwb~w", "quanww");
+  check_typing("hojj~j", "họ");
+  check_typing("hojjj~j", "hojj");
+  check_typing("quanwws", "quanws");   // TODO
+  check_typing("quanwwss", "quanwss"); // TODO
+  check_typing("hojjw", "hojw");       // TODO
+  check_typing("hojcj~j", "học");
+  check_typing("hojss~", "ho");
+  // check_typing("aaw", "ă");
+  // check_typing("awa", "â");
+  // check_typing("oow", "ơ");
+  // check_typing("owo", "ô");
 }
 
 void run_char_count_tests()

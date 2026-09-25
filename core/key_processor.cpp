@@ -38,9 +38,7 @@ namespace vietime
     bool is_pass_through = false;
 
     if (is_modifier_block_key(key, method_) && block_modified_pos_.has_value())
-    {
       is_pass_through = true;
-    }
 
     if (!is_pass_through)
     {
@@ -77,6 +75,8 @@ namespace vietime
       {
         if (base_.size() >= max_len_)
         {
+          // Qua API khong toi duoc: max_len_ = VIETIME_MAX_CODE_POINT, API chan truoc
+          // (xem ime_api.h). Chi chay khi goi thang KeyProcessor.
           result.consumed = true;
 
           return result;
@@ -88,7 +88,6 @@ namespace vietime
         if (t.was_tone)
         {
           tone_ = t.old_tone;
-          tone_blocked_ = true;
         }
         else
         {
@@ -123,7 +122,7 @@ namespace vietime
       }
 
       const Tone t = tone_by_input_method(key);
-      if (t != TONE_NONE && has_vowel(base_) && !tone_blocked_)
+      if (t != TONE_NONE && has_vowel(base_) && !block_modified_pos_.has_value())
       {
         Transform last;
         last.key = key;
@@ -188,7 +187,6 @@ namespace vietime
   {
     assert(base_.size() == upper_.size());
     history_.clear();
-    tone_blocked_ = false;
 
     if (base_.empty())
     {
@@ -205,7 +203,10 @@ namespace vietime
       tone_ = TONE_NONE;
 
     if (block_modified_pos_.has_value() && *block_modified_pos_ >= base_.size())
+    {
+      tone_ = TONE_NONE;
       block_modified_pos_.reset();
+    }
 
     return true;
   }
@@ -216,7 +217,6 @@ namespace vietime
     upper_.clear();
     history_.clear();
     tone_ = TONE_NONE;
-    tone_blocked_ = false;
     block_modified_pos_.reset();
   }
 
