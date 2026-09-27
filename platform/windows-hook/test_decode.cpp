@@ -24,7 +24,7 @@ namespace
   void expect_printable(DWORD vk, bool shift, bool caps, uint32_t cp,
                         const std::string &name)
   {
-    KeyDecode d = decode_vk(vk, 0, shift, caps);
+    KeyDecode d = decode_vk(vk, 0, shift, caps, false);
     check_eq<int>(static_cast<int>(d.kind),
                   static_cast<int>(KeyKind::Printable),
                   (name + ": la Printable").c_str());
@@ -34,7 +34,7 @@ namespace
   void expect_passthrough(DWORD vk, bool shift, bool caps,
                           const std::string &name)
   {
-    KeyDecode d = decode_vk(vk, 0, shift, caps);
+    KeyDecode d = decode_vk(vk, 0, shift, caps, false);
     check_eq<int>(static_cast<int>(d.kind),
                   static_cast<int>(KeyKind::PassThrough),
                   (name + ": la PassThrough").c_str());
@@ -43,7 +43,7 @@ namespace
   void expect_backspace(DWORD vk, bool shift, bool caps,
                         const std::string &name)
   {
-    KeyDecode d = decode_vk(vk, 0, shift, caps);
+    KeyDecode d = decode_vk(vk, 0, shift, caps, false);
     check_eq<int>(static_cast<int>(d.kind),
                   static_cast<int>(KeyKind::BackSpace),
                   (name + ": la BackSpace").c_str());
@@ -71,6 +71,8 @@ void test_decode()
   expect_passthrough(VK_ESCAPE, false, false, "Escape");
   expect_passthrough(VK_F1, false, false, "F1");
   expect_passthrough(VK_LEFT, false, false, "Mui ten trai");
+  expect_passthrough(VK_CONTROL, false, false, "Phim ctrl");
+  expect_passthrough(VK_CONTROL + VK_BACK, false, false, "Phim ctrl + backspace");
   expect_backspace(VK_BACK, false, false, "Backspace");
 
   // ---- Dấu câu phụ thuộc layout: chỉ chạy trên US ----

@@ -24,7 +24,7 @@ namespace vietime_hook
     uint32_t codepoint = 0;
   };
 
-  KeyDecode decode_vk(DWORD vk, DWORD scan, bool shift_down, bool caps_on);
+  KeyDecode decode_vk(DWORD vk, DWORD scan, bool shift_down, bool caps_on, bool ctrl_down);
 }
 
 #endif

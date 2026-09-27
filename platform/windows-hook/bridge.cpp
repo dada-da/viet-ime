@@ -86,9 +86,10 @@ namespace
     g_shown = st.shown;
   }
 
-  bool is_modifier_down(int vk)
+  bool is_modifier_down()
   {
-    return (GetKeyState(vk) & 0x8000) != 0;
+    bool is_modifier_key = (GetKeyState(VK_CONTROL) & 0x8000) || (GetKeyState(VK_MENU) & 0x8000) || (GetKeyState(VK_LWIN) & 0x8000) || (GetKeyState(VK_RWIN) & 0x8000);
+    return is_modifier_key != 0;
   }
 
   LRESULT CALLBACK low_level_keyboard(int code, WPARAM wparam, LPARAM lparam)
@@ -113,11 +114,12 @@ namespace
     if (!down)
       return CallNextHookEx(nullptr, code, wparam, lparam);
 
-    const bool shift = is_modifier_down(VK_SHIFT);
+    const bool shift = (GetAsyncKeyState(VK_SHIFT) & 0x8000) != 0;
     const bool caps = (GetKeyState(VK_CAPITAL) & 0x0001) != 0;
+    const bool is_modifier_key = is_modifier_down();
 
     vietime_hook::KeyDecode d =
-        vietime_hook::decode_vk(k->vkCode, k->scanCode, shift, caps);
+        vietime_hook::decode_vk(k->vkCode, k->scanCode, shift, caps, is_modifier_key);
 
     if (d.kind == vietime_hook::KeyKind::BackSpace)
     {

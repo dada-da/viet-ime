@@ -5,9 +5,15 @@
 
 namespace vietime_hook
 {
-  KeyDecode decode_vk(DWORD vk, DWORD scan, bool shift_down, bool caps_on)
+  KeyDecode decode_vk(DWORD vk, DWORD scan, bool shift_down, bool caps_on, bool is_modifier_key)
   {
     KeyDecode out;
+
+    if (vk == VK_BACK)
+    {
+      out.kind = KeyKind::BackSpace;
+      return out;
+    }
 
     BYTE state[256] = {};
     if (shift_down)
@@ -15,9 +21,8 @@ namespace vietime_hook
     if (caps_on)
       state[VK_CAPITAL] = 0x01; // bit thấp = đang bật (toggle)
 
-    if (vk == VK_BACK)
+    if (is_modifier_key)
     {
-      out.kind = KeyKind::BackSpace;
       return out;
     }
 
