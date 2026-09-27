@@ -15,6 +15,12 @@ namespace vietime_hook
     if (caps_on)
       state[VK_CAPITAL] = 0x01; // bit thấp = đang bật (toggle)
 
+    if (vk == VK_BACK)
+    {
+      out.kind = KeyKind::BackSpace;
+      return out;
+    }
+
     constexpr UINT kNoKeyStateChange = 0x04;
 
     HKL layout = GetKeyboardLayout(0);

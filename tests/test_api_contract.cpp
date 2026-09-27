@@ -340,4 +340,13 @@ void test_api_contract()
     run.flush();
     check_models(run, "Ti\u1EBFng Vi\u1EC7t", "Tieengs Vieejt");
   }
+
+  // 11. Câu có chữ hoa, dấu cách, flush — quét bất biến qua từng phím
+  {
+    Run run;
+    run.keys("hocj");
+    run.backspace();
+    run.keys("w");
+    check_models(run, "h\U00001EE3", "hocj+backspace+w");
+  }
 }

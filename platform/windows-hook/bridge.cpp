@@ -119,6 +119,15 @@ namespace
     vietime_hook::KeyDecode d =
         vietime_hook::decode_vk(k->vkCode, k->scanCode, shift, caps);
 
+    if (d.kind == vietime_hook::KeyKind::BackSpace)
+    {
+      VietimeKeyResult r = vietime_backspace(g_ctx);
+      apply_result(r);
+
+      if (r.key_consumed)
+        return 1;
+    }
+
     if (d.kind != vietime_hook::KeyKind::Printable)
     {
       VietimeKeyResult r = vietime_flush(g_ctx);
@@ -164,8 +173,7 @@ int main()
     vietime_destroy(g_ctx);
     return 1;
   }
-
-  std::printf("Go tieng Viet (Telex). Ctrl+C de thoat.\n");
+  std::printf("viet_hook Go tieng Viet (Telex). Ctrl+C de thoat.\n");
   std::fflush(stdout);
 
   MSG msg;

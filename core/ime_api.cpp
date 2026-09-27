@@ -224,6 +224,10 @@ extern "C" VietimeKeyResult vietime_backspace(vietime_ctx *ctx)
 
       key_result.text_length = length;
     }
+    else
+    {
+      key_result.key_consumed = false;
+    }
 
     return key_result;
   }

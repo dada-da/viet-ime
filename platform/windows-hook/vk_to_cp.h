@@ -15,6 +15,7 @@ namespace vietime_hook
   {
     Printable,   // ký tự in được trong 0x20..0x7E -> codepoint
     PassThrough, // phím khác (Enter, Ctrl+C, F1, dead key, ...) -> nhường
+    BackSpace
   };
 
   struct KeyDecode

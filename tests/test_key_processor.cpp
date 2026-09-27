@@ -92,6 +92,7 @@ void run_pipeline_tests()
   check_typing("quanwws", "quanws");   // TODO
   check_typing("quanwwss", "quanwss"); // TODO
   check_typing("hojjw", "hojw");       // TODO
+  check_typing("hojc~w", "hợ");
   check_typing("hojcj~j", "học");
   check_typing("hojss~", "ho");
   // check_typing("aaw", "ă");
